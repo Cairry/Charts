@@ -1,0 +1,25 @@
+
+Replicas: 1
+Image: nginx
+ImageTag: latest
+imagePullPolicy: Always
+useImagePullSecrets: 
+  enable: false
+  ImagePullSecrets: ""
+
+Resource: 
+  requests:
+    cpu: 400m
+    memory: 600Mi
+  limits:
+    cpu: 800m
+    memory: 800Mi
+
+# whether start the PVC, default is false and use emptyDir{}
+UsePVC: 
+  enable: false
+  persistentVolumeClaim:
+    claimName: ""
+
+# Svc default is ClusterIP type, also can use NodePort type.
+SvcType: ClusterIP

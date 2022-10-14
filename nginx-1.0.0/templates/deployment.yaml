@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.Replicas }}
+  selector:
+    matchLabels:
+      {{- include "nginx.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "nginx.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.Image }}:{{ .Values.ImageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- include "imagePullSecret" . | nindent 10 }}
+          ports:
+            - containerPort: 80
+
+          resources:
+            {{- toYaml .Values.Resources | nindent 12 }}
+
+          volumeMounts:
+            - name: mydata
+              mountPath: /data
+
+      volumes:
+        - name: mydata
+          {{- include "nginx.Storage" . | nindent 10}}

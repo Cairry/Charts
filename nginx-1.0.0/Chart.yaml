@@ -1,0 +1,8 @@
+apiVersion: v1
+name: nginx
+version: 1.0.0
+description: Install nginx
+maintainers:
+  - name: xuan.zu
+    email: xuan.zu@js.design
+    

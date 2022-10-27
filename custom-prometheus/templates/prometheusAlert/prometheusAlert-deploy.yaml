@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prometheusAlert.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "prometheusAlert.labels" . | nindent 4 }}
+    
+spec:
+  replicas: {{ .Values.prometheusAlert.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "prometheusAlert.labels" . | nindent 6 }}
+    
+  template:
+    metadata:
+      labels:
+        {{- include "prometheusAlert.labels" . | nindent 8 }}
+        
+    spec:
+      containers:
+      - name: prometheusalert
+        image: "{{ .Values.prometheusAlert.image.repository }}:{{ .Values.prometheusAlert.image.tag }}"
+        imagePullPolicy: {{ .Values.prometheusAlert.image.imagePullPolicy }}
+        command:
+          - /app/PrometheusAlert
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        
+        resources:
+          {{- toYaml .Values.prometheusAlert.resources | nindent 10 }}
+
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+        - name: conf 
+          mountPath: /app/conf
+        - name: db
+          mountPath: /app/db
+        - name: logs
+          mountPath: /app/logs
+      
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: conf
+        configMap:
+          name: prometheusalert-config
+      - name: logs
+        hostPath:
+          path: /data/monitoring/prometheusAlert/logs
+          # type: Directory
+      - name: db 
+        hostPath:
+          path: /data/monitoring/prometheusAlert/data
+          # type: Directory
+

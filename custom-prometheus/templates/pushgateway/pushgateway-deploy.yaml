@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pushgateway.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "pushgateway.labels" . | nindent 4 }}
+    
+spec:
+  replicas: {{ .Values.pushgateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pushgateway.labels" . | nindent 6 }}
+    
+  template:
+    metadata:
+      labels:
+        {{- include "pushgateway.labels" . | nindent 8 }}
+        
+    spec:
+      containers:
+      - name: pushgateway
+        image: "{{ .Values.pushgateway.image.repository }}:{{ .Values.pushgateway.image.tag }}"
+        imagePullPolicy: {{ .Values.pushgateway.image.imagePullPolicy }}
+
+        ports:
+        - containerPort: 9091
+          protocol: TCP
+        
+        resources:
+          {{- toYaml .Values.pushgateway.resources | nindent 10 }}

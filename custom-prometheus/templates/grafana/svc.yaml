@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+  name: {{ include "grafana.name" . }}
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    {{- include "grafana.labels" . | nindent 4 }}
+  type: {{ .Values.grafana.service.type }}
+  ports:
+  - port: {{ .Values.grafana.service.port }}
+    targetPort: {{ .Values.grafana.service.targetPort }}
+    {{- if eq .Values.grafana.service.type "NodePort" }}
+      {{- if .Values.grafana.service.customNodePort.enabled }}
+        {{- toYaml .Values.grafana.service.customNodePort.configure | nindent 4 }}
+      {{ end }}
+    {{ end }}
+

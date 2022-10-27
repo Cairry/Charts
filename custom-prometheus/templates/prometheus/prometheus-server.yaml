@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prometheus.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+    
+spec:
+  replicas: {{ .Values.prometheus.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "prometheus.labels" . | nindent 6 }}
+    
+  template:
+    metadata:
+      labels:
+        {{- include "prometheus.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: 'true'
+        
+    spec:
+      # nodeName: z6gizpvemac5jsc
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+        imagePullPolicy: {{ .Values.prometheus.image.imagePullPolicy }}
+        command:
+          - prometheus
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --storage.tsdb.path=/prometheus
+          - --storage.tsdb.retention=720h
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+          
+        resources:
+          {{- toYaml .Values.prometheus.resources | nindent 10 }}
+
+        volumeMounts:
+        - mountPath: /etc/prometheus/prometheus.yml
+          name: prometheus-config
+          subPath: prometheus.yml
+        - mountPath: /prometheus/
+          name: prometheus-storage-volume
+        - name: localtime
+          mountPath: /etc/localtime
+        - name: prometheus-rules
+          mountPath: /etc/prometheus/rules/
+      
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+            items:
+              - key: prometheus.yml
+                path: prometheus.yml
+                mode: 0644
+        - name: prometheus-rules
+          configMap:
+            name: prometheus-rules
+        - name: prometheus-storage-volume
+          hostPath:
+            path: /data/monitoring/prometheus
+            type: Directory
+        - name: localtime
+          hostPath:
+            path: /etc/localtime

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheusAlert.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "prometheusAlert.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "prometheusAlert.labels" . | nindent 4 }}
+  type: {{ .Values.prometheusAlert.service.type }}
+  ports:
+  - port: {{ .Values.prometheusAlert.service.port }}
+    targetPort: {{ .Values.prometheusAlert.service.targetPort }}
+    protocol: TCP
+    {{- if eq .Values.prometheusAlert.service.type "NodePort" }}
+      {{- if .Values.prometheusAlert.service.customNodePort.enabled }}
+        {{- toYaml .Values.prometheusAlert.service.customNodePort.configure | nindent 4 }}
+      {{ end }}
+    {{ end }}

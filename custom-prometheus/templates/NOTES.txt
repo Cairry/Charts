@@ -1,0 +1,22 @@
+
+##########################################################################################
+######            Successfuly: Custom-Prometheus Install Successfuly.                #####
+######                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!                             #####
+##########################################################################################
+
+Prometheus Url:
+  - IP:{{ .Values.prometheus.service.customNodePort.configure.nodePort }}
+
+Alertmanager Url:
+  - IP:{{ .Values.alertmanager.service.customNodePort.configure.nodePort }}
+
+PrometheusAlert Url:
+  - IP:{{ .Values.prometheusAlert.service.customNodePort.configure.nodePort }}
+
+PushGateway Url:
+  - IP:{{ .Values.pushgateway.service.customNodePort.configure.nodePort }}
+
+Grafana Url:
+  - IP:{{ .Values.grafana.service.customNodePort.configure.nodePort }}
+
+——————————————————————————————————————————————————————————————————————————————————————————

@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "grafana.name" . }}-chown"
+  namespace: {{ .Values.global.namespace }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: grafana-chown
+        command: ["chown", "-R", "472:472", "/var/lib/grafana"]
+        image: "{{ .Values.grafana.permissions.imageRepository }}:{{ .Values.grafana.permissions.imageTag }}"
+        imagePullPolicy: {{ .Values.grafana.permissions.imagePullPolicy }}
+        volumeMounts:
+        - name: storage
+          subPath: grafana
+          mountPath: /var/lib/grafana
+      volumes:
+      - name: storage
+        hostPath:
+          path: /data/grafana-volume-data
+        # persistentVolumeClaim:
+        #   claimName: grafana

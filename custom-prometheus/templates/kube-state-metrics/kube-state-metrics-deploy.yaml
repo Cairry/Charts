@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "kube-state-metrics.labels" . | nindent 4 }}
+  name: kube-state-metrics
+  namespace: {{ .Values.global.namespace }}
+  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "kube-state-metrics.labels" . | nindent 6 }}
+      
+  template:
+    metadata:
+      labels:
+        {{- include "kube-state-metrics.labels" . | nindent 8 }}
+        
+    spec:
+      containers:
+      - image: "{{ .Values.kubeStateMetrics.image.repository }}:{{ .Values.kubeStateMetrics.image.tag }}"
+        imagePullPolicy: {{ .Values.kubeStateMetrics.image.imagePullPolicy }}
+        name: kube-state-metrics
+
+        ports:
+        - containerPort: 8080
+          name: http-metrics
+        - containerPort: 8081
+          name: telemetry
+
+        {{ if .Values.kubeStateMetricslivenessProbe }}
+        livenessProbe:
+          {{ toYaml .Values.kubeStateMetrics.livenessProbe.configure | nindent 10 }}
+        {{ end }}
+
+        {{ if .Values.kubeStateMetrics.readinessProbe }}
+        readinessProbe:
+          {{ toYaml .Values.kubeStateMetrics.readinessProbe.configure | nindent 10 }}
+        {{ end }}
+          
+      nodeSelector:
+        {{ toYaml .Values.kubeStateMetrics.nodeSelector | nindent 8 }}
+
+      serviceAccountName: kube-state-metrics

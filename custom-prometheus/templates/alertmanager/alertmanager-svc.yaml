@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "alertmanager.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "alertmanager.labels" . | nindent 4 }}
+
+spec:
+  selector:
+    {{- include "alertmanager.labels" . | nindent 4 }}
+  type: {{ .Values.alertmanager.service.type }}
+  ports:
+  - port: {{ .Values.alertmanager.service.port }}
+    targetPort: {{ .Values.alertmanager.service.targetPort }}
+    {{- if eq .Values.alertmanager.service.type "NodePort" }}
+      {{- if .Values.alertmanager.service.customNodePort.enabled }}
+        {{- toYaml .Values.alertmanager.service.customNodePort.configure | nindent 4 }}
+      {{ end }}
+    {{ end }}
+

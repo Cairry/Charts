@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pushgateway.name" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "pushgateway.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "pushgateway.labels" . | nindent 4 }}
+  type: {{ .Values.pushgateway.service.type }}
+  ports:
+  - port: {{ .Values.pushgateway.service.port }}
+    targetPort: {{ .Values.pushgateway.service.targetPort }}
+    protocol: TCP
+    {{- if eq .Values.pushgateway.service.type "NodePort" }}
+      {{- if .Values.pushgateway.service.customNodePort.enabled }}
+        {{- toYaml .Values.pushgateway.service.customNodePort.configure | nindent 4 }}
+      {{ end }}
+    {{ end }}

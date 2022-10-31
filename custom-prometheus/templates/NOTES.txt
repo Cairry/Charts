@@ -5,12 +5,18 @@
 ##########################################################################################
 
 ******************************************************************************************
+
  Prometheus 监控告警系统安装成功!
 
  请前往 PromethuesAlert 平台添加告警模版
  - URL : http://IP:{{ .Values.prometheusAlert.service.customNodePort.configure.nodePort }}
  - User: prometheusalert
  - Pass: prometheusalert
+
+ 如采用默认存储LocalPath方式请执行, 不是请忽略.
+ - `mkdir /data/monitoring/prometheus`
+ - `chmod 777 -R /data/monitoring/`
+
 ******************************************************************************************
 
 Prometheus Url:

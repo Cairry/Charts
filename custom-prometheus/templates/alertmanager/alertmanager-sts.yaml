@@ -23,47 +23,40 @@ spec:
 
     spec:
       containers:
-        - name: alertmanager
-          image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
-          imagePullPolicy: {{ .Values.alertmanager.image.imagePullPolicy }}
-          ports:
-            - containerPort: 9093
+      - name: alertmanager
+        image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
+        imagePullPolicy: {{ .Values.alertmanager.image.imagePullPolicy }}
+        ports:
+        - containerPort: 9093
 
-          {{- if .Values.alertmanager.readinessProbe }}
-          readinessProbe:
-            {{ toYaml .Values.alertmanager.readinessProbe.configure | nindent 12 }}
-          {{ end }}
+        {{- if .Values.alertmanager.readinessProbe }}
+        readinessProbe:
+          {{ toYaml .Values.alertmanager.readinessProbe.configure | nindent 12 }}
+        {{ end }}
 
-          resources:
-            {{ toYaml .Values.alertmanager.resources | nindent 12 }}
+        resources:
+          {{ toYaml .Values.alertmanager.resources | nindent 12 }}
 
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/alertmanager
-            - name: storage-volume
-              mountPath: /data
-            - name: localtime
-              mountPath: /etc/localtime
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/alertmanager
+        - name: storage-volume
+          mountPath: /data
+        - name: localtime
+          mountPath: /etc/localtime
 
       volumes:
-        - name: config-volume
-          configMap:
-            name: alertmanager-config
-        - name: localtime
-          hostPath:
-            path: /etc/localtime
-        - name: storage-volume
-          hostPath:
-            path: /data/monitoring/alertmanager
-
-  # volumeClaimTemplates:
-  #   - metadata:
-  #       name: storage-volume
-  #       namespace: monitoring
-  #     spec:
-  #       accessModes: [ "ReadWriteOnce" ]
-  #       resources:
-  #         requests:
-  #           storage: 10Gi
-  #       storageClassName: managed-nfs-storage
+      - name: config-volume
+        configMap:
+          name: alertmanager-config
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      {{- if .Values.alertmanager.storageSpec }}
+      {{- toYaml .Values.alertmanager.storageSpec | nindent 4 }}
+      {{- else }}
+      - name: storage-volume
+        hostPath:
+          path: /data/monitoring/alertmanager
+      {{- end }}
 

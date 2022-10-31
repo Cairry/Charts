@@ -4,7 +4,7 @@ metadata:
   labels:
     {{- include "kube-state-metrics.labels" . | nindent 4 }}
   name: kube-state-metrics
-  namespace: {{ .Values.global.namespace }}
+  namespace: kube-system
   
 spec:
   replicas: 1
@@ -29,15 +29,15 @@ spec:
         - containerPort: 8081
           name: telemetry
 
-        {{ if .Values.kubeStateMetricslivenessProbe }}
+        {{- if .Values.kubeStateMetricslivenessProbe }}
         livenessProbe:
           {{ toYaml .Values.kubeStateMetrics.livenessProbe.configure | nindent 10 }}
-        {{ end }}
+        {{- end }}
 
-        {{ if .Values.kubeStateMetrics.readinessProbe }}
+        {{- if .Values.kubeStateMetrics.readinessProbe }}
         readinessProbe:
           {{ toYaml .Values.kubeStateMetrics.readinessProbe.configure | nindent 10 }}
-        {{ end }}
+        {{- end }}
           
       nodeSelector:
         {{ toYaml .Values.kubeStateMetrics.nodeSelector | nindent 8 }}

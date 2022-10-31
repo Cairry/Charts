@@ -52,7 +52,12 @@ spec:
       - name: ca-certificates
         hostPath:
           path: /etc/ssl/certs
+      {{- if .Values.grafana.storageSpec }}
+      - name: grafana-storage
+      {{- toYaml .Values.grafana.storageSpec | nindent 8 }}
+      {{- else }}
       - name: grafana-storage
         hostPath:
           path: /data/monitoring/grafana
+      {{- end }}
 

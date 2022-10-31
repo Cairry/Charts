@@ -61,10 +61,15 @@ spec:
         - name: prometheus-rules
           configMap:
             name: prometheus-rules
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        {{- if .Values.prometheus.storageSpec }}
+        - name: prometheus-storage-volume
+        {{- toYaml .Values.prometheus.storageSpec | nindent 10 }}
+        {{- else }}
         - name: prometheus-storage-volume
           hostPath:
             path: /data/monitoring/prometheus
             type: Directory
-        - name: localtime
-          hostPath:
-            path: /etc/localtime
+        {{- end}}

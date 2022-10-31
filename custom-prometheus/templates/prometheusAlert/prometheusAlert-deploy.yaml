@@ -51,10 +51,14 @@ spec:
           name: prometheusalert-config
       - name: logs
         hostPath:
-          path: /data/monitoring/prometheusAlert/logs
+          path: /var/log/prometheusAlert/logs
           # type: Directory
+      {{- if .Values.prometheusAlert.storageSpec }}
+      - name: db 
+      {{- toYaml .Values.prometheusAlert.storageSpec | nindent 8 }}
+      {{- else }}
       - name: db 
         hostPath:
           path: /data/monitoring/prometheusAlert/data
           # type: Directory
-
+      {{- end }}

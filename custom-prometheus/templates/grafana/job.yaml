@@ -13,12 +13,15 @@ spec:
         image: "{{ .Values.grafana.permissions.imageRepository }}:{{ .Values.grafana.permissions.imageTag }}"
         imagePullPolicy: {{ .Values.grafana.permissions.imagePullPolicy }}
         volumeMounts:
-        - name: storage
+        - name: grafana-storage
           subPath: grafana
           mountPath: /var/lib/grafana
       volumes:
-      - name: storage
+      {{- if .Values.grafana.storageSpec }}
+      - name: grafana-storage
+      {{- toYaml .Values.grafana.storageSpec | nindent 8 }}
+      {{- else }}
+      - name: grafana-storage
         hostPath:
-          path: /data/grafana-volume-data
-        # persistentVolumeClaim:
-        #   claimName: grafana
+          path: /data/monitoring/grafana
+      {{- end }}

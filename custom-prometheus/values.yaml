@@ -107,9 +107,9 @@ prometheus:
           expr: kube_endpoint_address_not_ready{namespace=~"kube-system|default"} == 1
           for: 2s
           labels:
-            team: admin
+            severity: warnning
           annotations:
-            description: "空间{{$labels.namespace}}({{$labels.instance}}): 发现{{$labels.endpoint}}不可用"
+            description: "命名空间: {{$labels.namespace}: 发现{{$labels.endpoint}}接口不可用."
             value: "{{ $value }}"
             threshold: "1"
       - name: 物理节点状态-监控告警

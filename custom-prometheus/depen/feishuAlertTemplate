@@ -1,0 +1,19 @@
+{{ $var := .externalURL}}{{ range $k,$v:=.alerts }}
+    {{if eq $v.status "resolved"}}
+        **Prometheus恢复信息✅**
+
+        **恢复类型：**{{$v.labels.alertname}}
+        **开始时间：**{{ GetCSTtime $v.startsAt }} 
+        **结束时间：**{{ GetCSTtime $v.endsAt }}
+        **恢复主机：**{{$v.labels.instance}}
+        **状态信息：****已恢复**
+    {{else}}
+        **Prometheus告警信息🔥**
+
+        **告警类型：**{{$v.labels.alertname}}
+        **告警级别：**{{$v.labels.severity}}
+        **开始时间：**{{ GetCSTtime $v.startsAt }} 
+        **故障主机：**{{$v.labels.instance}}
+        **告警信息：**{{$v.annotations.description}}
+    {{end}}
+{{ end }}

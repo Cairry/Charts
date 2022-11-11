@@ -103,33 +103,25 @@ prometheus:
             description: "{{$labels.instance}}的{{$labels.k8s_app}}组件的cpu使用率超过80%"
             value: "{{ $value }}%"
             threshold: "80%"      
-        - alert: Endpoint_ready
-          expr: kube_endpoint_address_not_ready{namespace=~"kube-system|default"} == 1
-          for: 2s
-          labels:
-            severity: warnning
-          annotations:
-            description: "命名空间: {{$labels.namespace}: 发现{{$labels.endpoint}}接口不可用."
-            value: "{{ $value }}"
-            threshold: "1"
+
       - name: 物理节点状态-监控告警
         rules:
         - alert: 物理节点cpu使用率
-          expr: 100-avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) by(instance)*100 > 90
+          expr: 100-avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) by(instance)*100 > 80
           for: 2s
           labels:
-            severity: ccritical
+            severity: critical
           annotations:
             summary: "{{ $labels.instance }}cpu使用率过高"
-            description: "{{ $labels.instance }}的cpu使用率超过90%,当前使用率[{{ $value }}],需要排查处理" 
+            description: "{{ $labels.instance }}的cpu使用率超过80%,当前使用率[{{ $value }}],需要排查处理" 
         - alert: 物理节点内存使用率
-          expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 90
+          expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 80
           for: 2s
           labels:
             severity: critical
           annotations:
             summary: "{{ $labels.instance }}内存使用率过高"
-            description: "{{ $labels.instance }}的内存使用率超过90%,当前使用率[{{ $value }}],需要排查处理"
+            description: "{{ $labels.instance }}的内存使用率超过80%,当前使用率[{{ $value }}],需要排查处理"
         - alert: InstanceDown
           expr: up == 0
           for: 2s
@@ -154,7 +146,16 @@ prometheus:
           annotations:
             summary: "{{$labels.mountpoint}} 磁盘分区使用率过高！"
             description: "{{$labels.mountpoint }} 磁盘分区使用大于80%(目前使用:{{$value}}%)"
-
+      - name: 业务服务接口-监控告警
+        rules:
+        - alert: 服务接口状态
+          expr: InterfaceStatusCode != 200
+          for: 2s
+          labels:
+            severity: critical
+          annotations:
+            summary: "「{{ $labels.name }}」接口异常"
+            description: "命名空间: {{ $labels.namespace }}, SVC:「{{ $labels.name }}」接口「{{ $value }}」异常!" 
 
 grafana: 
   image:
@@ -251,9 +252,26 @@ alertmanager:
         nodePort: 30111
 
   prometheusalertWebHook:
+    # 飞书告警
     feishu:
       enabled: true
       url: https://open.feishu.cn/open-apis/bot/v2/hook/2ff32dbc-6797-4d75-xxxxxxxxx
+    # 钉钉告警
+    dingding:
+      enabled: false 
+      url: https://oapi.dingtalk.com/robot/send?access_token=6fdf79868xxxxxxxx
+    # 企业微信告警
+    qywechat:
+      enabled: false
+      url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx
+    # 邮件告警
+    email:
+      enabled: false
+      emailHost: "smtp.qq.com"
+      emailHostPort: "465"
+      sendEmailUser: "send@qq.com"
+      sendEmailPass: "xxxxxx"
+      receiveEmailUser: "receive1@qq.com,receive2@qq.com"
 
   storageSpec: {}
     # volumeClaimTemplates:

@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: check-svr-interface-state
+  namespace: {{ .Values.global.namespace }}
+spec:
+  containers:
+  - name: check-svr-interface-state
+    image: registry.js.design/prometheus/check-container-state:v1.0.0
+    imagePullPolicy: IfNotPresent
+    command: ["bash","/app/PushInterfaceState.sh"]
+    volumeMounts:
+    - name: script
+      mountPath: /app/PushInterfaceState.sh
+      subPath: PushInterfaceState.sh
+  volumes:
+  - name: script
+    configMap:
+      name: interface-state-cm
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: interface-state-cm
+  namespace: {{ .Values.global.namespace }}
+data:
+  PushInterfaceState.sh: |-
+    #!/bin/bash
+    ###
+    # @Author: Xuan.Zu
+    # @Email: xuan.zu@js.design
+    # @Date: 2022-10-24 16:47:43
+    # @Description: 监控服务接口状态
+    ### 
+
+    PushInterfaceState() {
+
+        # 接口
+        Interface=(
+            js-design-server.default.svc.cluster.local:3002/health/check
+            js-design-svc-hedwig.default.svc.cluster.local:3011/api/microservice/message/health/check
+            js-design-svc-norris.default.svc.cluster.local:9001/resource-permission/health/check
+            nginx-service.default.svc.cluster.local:80
+        )
+
+        # 时间
+        Date=$(date +%Y-%m-%d-%H:%M:%S)
+
+        for SvcInf in ${Interface[@]};
+        do
+            StatusCode=$(curl -I -s ${SvcInf} | head -n 1 | awk '{print $2}')
+
+            if [ "${StatusCode}" = "200" ]; then
+                Curl
+                echo "[INFO ${Date}] SVC: ${InterfaceID} 接口「${StatusCode}」正常~~~"
+            elif [ "${StatusCode}" = "" ]; then
+                StatusCode="000"
+                Curl
+                echo "[INFO ${Date}] SVC: ${InterfaceID} 接口Down机!!!"
+            else
+                Curl
+                echo "[ERROR ${Date}] SVC: ${InterfaceID} 接口「${StatusCode}」异常!!!"
+            fi
+        done
+
+    }
+
+    # 推送
+    Curl() {
+
+        InterfaceID=$(echo ${SvcInf} | awk -F '.' '{print $1}')
+        NameSpace=$(echo ${SvcInf} | awk -F '.' '{print $2}')
+        echo "InterfaceStatusCode ${StatusCode}" | curl -s --data-binary @- http://{{ include "pushgateway.name" . }}.{{ .Values.global.namespace }}.svc.cluster.local:9091/metrics/job/InterfaceStatusCode/namespace/${NameSpace}/name/${InterfaceID} && echo "{success:200}" || echo "echo {faild:500}"
+
+    }
+
+
+    # -------------- Main() --------------
+    Logfile="/var/log/monitorContainerLog.log"
+
+    while true
+    do
+        PushInterfaceState 2>&1 | tee ${Logfile};
+        sleep 50;
+        # 静止50秒
+    done

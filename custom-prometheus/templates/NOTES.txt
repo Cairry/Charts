@@ -8,6 +8,8 @@
 
  Prometheus 监控告警系统安装成功!
 
+ 监控包含: 集群组件、节点状态、节点资源、服务接口
+
  请前往 PromethuesAlert 平台添加告警模版
  - URL : http://IP:{{ .Values.prometheusAlert.service.customNodePort.configure.nodePort }}
  - User: prometheusalert

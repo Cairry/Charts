@@ -69,14 +69,22 @@ data:
     #是否开启钉钉告警通道,可同时开始多个通道0为关闭,1为开启
     open-dingding=1
     #默认钉钉机器人地址
+    {{- if .Values.alertmanager.prometheusalertWebHook.dingding.enabled }}
+    ddurl={{ .Values.alertmanager.prometheusalertWebHook.dingding.url }}
+    {{- else  }}
     ddurl=https://oapi.dingtalk.com/robot/send?access_token=xxxxx
+    {{- end }}
     #是否开启 @所有人(0为关闭,1为开启)
     dd_isatall=1
 
     #是否开启微信告警通道,可同时开始多个通道0为关闭,1为开启
     open-weixin=1
     #默认企业微信机器人地址
+    {{- if .Values.alertmanager.prometheusalertWebHook.qywechat.enabled }}
+    wxurl={{ .Values.alertmanager.prometheusalertWebHook.qywechat.url }}
+    {{- else  }}
     wxurl=https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx
+    {{- end }}
 
     #是否开启飞书告警通道,可同时开始多个通道0为关闭,1为开启
     open-feishu=1
@@ -85,11 +93,25 @@ data:
     fsurl={{ .Values.alertmanager.prometheusalertWebHook.feishu.url }}
     {{- else  }}
     fsurl=https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxx
-    {{ end }}
+    {{- end }}
 
     #---------------------↓邮件配置-----------------------
     #是否开启邮件
-    open-email=0
+    open-email=1
+    {{- if .Values.alertmanager.prometheusalertWebHook.email.enabled }}
+    #邮件发件服务器地址
+    Email_host={{ .Values.alertmanager.prometheusalertWebHook.email.emailHost }}
+    #邮件发件服务器端口
+    Email_port={{ .Values.alertmanager.prometheusalertWebHook.email.emailHostPort }}
+    #邮件帐号
+    Email_user={{ .Values.alertmanager.prometheusalertWebHook.email.sendEmailUser }}
+    #邮件密码
+    Email_password={{ .Values.alertmanager.prometheusalertWebHook.email.sendEmailPass }}
+    #邮件标题
+    Email_title=运维告警
+    #默认发送邮箱
+    Default_emails={{ .Values.alertmanager.prometheusalertWebHook.email.receiveEmailUser }}
+    {{- else  }}
     #邮件发件服务器地址
     Email_host=smtp.qq.com
     #邮件发件服务器端口
@@ -102,6 +124,7 @@ data:
     Email_title=运维告警
     #默认发送邮箱
     Default_emails=xxxxx@qq.com,xxxxx@qq.com
+    {{- end }}
 
     #---------------------↓workwechat接口-----------------------
     #是否开启workwechat告警通道,可同时开始多个通道0为关闭,1为开启

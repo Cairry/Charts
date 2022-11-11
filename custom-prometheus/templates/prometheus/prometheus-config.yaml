@@ -142,20 +142,9 @@ data:
     #   - targets: ['127.0.0.1:2379']
 
     - job_name: prometheus-pushgateway
-      honor_labels: true
-      honor_timestamps: true
-      scrape_interval: 1m
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      kubernetes_sd_configs:
-      - role: service
-      relabel_configs:
-      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
-        separator: ;
-        regex: pushgateway
-        replacement: $1
-        action: keep
+      scrape_interval: 5s
+      static_configs:
+      - targets: ['{{ include "pushgateway.name" . }}:9091']
 
     - job_name: "kube-state-metrics"
       kubernetes_sd_configs:

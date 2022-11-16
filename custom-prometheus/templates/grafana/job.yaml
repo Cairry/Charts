@@ -6,10 +6,26 @@ metadata:
 spec:
   template:
     spec:
+
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:  # 硬策略
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - grafana
+            topologyKey: kubernetes.io/hostname
+
       restartPolicy: Never
       containers:
       - name: grafana-chown
-        command: ["chown", "-R", "472:472", "/var/lib/grafana"]
+        command: 
+        - "bin/sh"
+        - "-c"
+        - "chown -R 472:472 /var/lib/grafana && echo '[INFO]: init SuccessFuly.'"
+        
         image: "{{ .Values.grafana.permissions.imageRepository }}:{{ .Values.grafana.permissions.imageTag }}"
         imagePullPolicy: {{ .Values.grafana.permissions.imagePullPolicy }}
         volumeMounts:

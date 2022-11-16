@@ -10,15 +10,6 @@
 
  监控包含: 集群组件、节点状态、节点资源、服务接口等...
 
- 请前往 PromethuesAlert 平台添加告警模版
- - URL : http://IP:{{ .Values.prometheusAlert.service.customNodePort.configure.nodePort }}
- - User: prometheusalert
- - Pass: prometheusalert
-
- 如采用默认存储LocalPath本地存储方式请执行, 不是请忽略.
- - `mkdir -p /data/monitoring/prometheus`
- - `chmod 777 -R /data/monitoring/`
-
 ******************************************************************************************
 
 Prometheus Url:

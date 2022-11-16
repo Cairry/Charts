@@ -1,5 +1,5 @@
 global:
-  namespace: monitoring
+  namespace: '{{ PromNs }}'
 
 nodeExporter:
   image:
@@ -42,8 +42,19 @@ prometheus:
       memory: "4Gi"
 
   storageSpec: {}
+    # 调用已有的PVC
+    # 「注意: 当创建新的PVC时也需要打开此字段, 且claimName相同!!!」
     # persistentVolumeClaim:
     #   claimName: my-pvc-auto
+
+    # 创建新的PVC, 需提前配置SC自动挂载PV模式, 当无法自动创建PV时需提前手动创建好PV.
+    # 「注意: 当集群中存在想要的PVC时则不需要再重复创建, 直接在上面的字段中引用即可.」
+    # createPVC:
+    #   persistentVolumeClaim:
+    #     claimName: my-pvc-auto
+    #     accessModes: ReadWriteMany
+    #     storageClassName: local-path-csi
+    #     storageSize: 100Gi
 
 grafana: 
   image:
@@ -71,12 +82,23 @@ grafana:
   # 权限
   permissions:
     imageRepository: registry.js.design/library/busybox
-    imageTag: latest
+    imageTag: 1.30.0
     imagePullPolicy: IfNotPresent
 
   storageSpec: {}
+    # 调用已有的PVC
+    # 「注意: 当创建新的PVC时也需要打开此字段, 且claimName相同!!!」
     # persistentVolumeClaim:
     #   claimName: my-pvc-auto
+
+    # 创建新的PVC, 需提前配置SC自动挂载PV模式, 当无法自动创建PV时需提前手动创建好PV.
+    # 「注意: 当集群中存在想要的PVC时则不需要再重复创建, 直接在上面的字段中引用即可.」
+    # createPVC:
+    #   persistentVolumeClaim:
+    #     claimName: my-pvc-auto
+    #     accessModes: ReadWriteMany
+    #     storageClassName: local-path-csi
+    #     storageSize: 100Gi
 
 kubeStateMetrics:
   image:
@@ -177,7 +199,7 @@ prometheusAlert:
   replicaCount: 1
   image:
     repository: registry.js.design/prometheus/prometheus-alert
-    tag: latest
+    tag: stable-v1
     imagePullPolicy: IfNotPresent
 
   service: 
@@ -198,8 +220,19 @@ prometheusAlert:
       memory: 40Mi
 
   storageSpec: {}
+    # 调用已有的PVC
+    # 「注意: 当创建新的PVC时也需要打开此字段, 且claimName相同!!!」
     # persistentVolumeClaim:
     #   claimName: my-pvc-auto
+
+    # 创建新的PVC, 需提前配置SC自动挂载PV模式, 当无法自动创建PV时需提前手动创建好PV.
+    # 「注意: 当集群中存在想要的PVC时则不需要再重复创建, 直接在上面的字段中引用即可.」
+    # createPVC:
+    #   persistentVolumeClaim:
+    #     claimName: my-pvc-auto
+    #     accessModes: ReadWriteMany
+    #     storageClassName: local-path-csi
+    #     storageSize: 100Gi
 
 pushgateway:
   replicaCount: 1

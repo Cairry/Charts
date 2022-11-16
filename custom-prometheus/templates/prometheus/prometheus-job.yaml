@@ -1,0 +1,30 @@
+{{- if not .Values.prometheus.storageSpec  }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "prometheus.name" . }}-initjob
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: init
+        image: registry.js.design/library/busybox:1.30.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - "bin/sh"
+        - "-c"
+        - "mkdir -p /data/monitoring/prometheus && chmod 777 -R /data/monitoring/ && echo '[INFO]: init SuccessFuly.'"
+
+        volumeMounts:
+        - name: db
+          mountPath: /data/monitoring/
+          
+      volumes:
+        - name: db
+          hostPath:
+            path: /data/monitoring/
+{{- end }}

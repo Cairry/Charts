@@ -6,7 +6,7 @@ metadata:
   name: prometheus-rules
   namespace: {{ .Values.global.namespace }}
 data: 
-  prometheus.yml: |
+  prometheus-rules.yml: |
     groups:
       - name: example
         rules:
@@ -117,3 +117,71 @@ data:
           annotations:
             summary: "「{{`{{ $labels.name }}`}}」接口异常"
             description: "命名空间: {{`{{ $labels.namespace }}`}}, SVC:「{{`{{ $labels.name }}`}}」接口「{{`{{ $value }}`}}」异常!" 
+
+      - name: Ceph存储-监控告警
+        rules:
+        - alert: Ceph集群不健康
+          expr: ceph_health_status != 0
+          for: 2s
+          labels:
+            severity: critical
+          annotations:
+            description: "Warring: Ceph集群状态不健康「{{`{{ $labels.instance }}`}}」!"       
+
+        - alert: Ceph Osd Down
+          expr: ceph_osd_up == 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            description: "Ceph对象存储守护进程Down「{{`{{ $labels.ceph_daemon }}`}}」!"
+
+        - alert: Ceph监视器时钟倾斜
+          expr: abs(ceph_monitor_clock_skew_seconds) > 0.2
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            description: "检测到Ceph监视器时钟不同步, 请检查ntp和硬件时钟设置!"
+
+        - alert: Ceph监视器空间不足
+          expr: ceph_monitor_avail_percent < 10
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            description: "Ceph监视器存储不足!"
+
+        - alert: Ceph Pg Down
+          expr: ceph_pg_down > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            description: "Ceph pg down, 请确保所有数据都是可用的!"
+
+      - name: Minio存储-监控告警
+        rules:
+        - alert: Minio 集群磁盘离线
+          expr: minio_cluster_disk_offline_total > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            description: "Minio cluster disk is offline."
+
+        - alert: Minio 集群节点离线
+          expr: minio_cluster_nodes_offline_total > 0
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            description: "Minio cluster node disk is offline."
+
+        - alert: Minio 磁盘可用空间低于25%
+          expr: disk_storage_available / disk_storage_total * 100 < 25
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            description: "Minio available free space is low (< 10%), The current: {{`{{ $value }}`}}"

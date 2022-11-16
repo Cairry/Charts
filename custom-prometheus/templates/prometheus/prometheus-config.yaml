@@ -153,3 +153,14 @@ data:
       - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_endpoints_name]
         regex: kube-system;kube-state-metrics
         action: keep
+
+    - job_name: "ceph-job"
+      scrape_interval: 5s
+      static_configs:
+      - targets: ['rook-ceph-mgr.rook-ceph.svc.cluster.local:9283']
+
+    - job_name: "minio-job"
+      metrics_path: /minio/v2/metrics/cluster
+      scheme: http
+      static_configs:
+      - targets: ['minio-headless.xiaopiu.svc.cluster.local:9000']

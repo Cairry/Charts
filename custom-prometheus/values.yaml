@@ -80,7 +80,7 @@ grafana:
 
 kubeStateMetrics:
   image:
-    repository: registry.cn-shenzhen.aliyuncs.com/starsl/kube-state-metrics
+    repository: registry.js.design/prometheus/kube-state-metrics
     tag: v2.2.1
     imagePullPolicy: IfNotPresent
 

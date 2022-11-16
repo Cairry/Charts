@@ -17,8 +17,17 @@ data:
     - name: 'prometheusalert'
       webhook_configs:
       {{- if .Values.alertmanager.prometheusalertWebHook.feishu.enabled }}
-      - url: "http://{{ include "prometheusAlert.name" . }}:{{ .Values.prometheusAlert.service.port }}/prometheusalert?type=fs&tpl=jsdesign&fsurl{{ .Values.alertmanager.prometheusalertWebHook.feishu.url }}"
-      {{ end }}
+      - url: "http://{{ include "prometheusAlert.name" . }}:{{ .Values.prometheusAlert.service.port }}/prometheusalert?type=fs&tpl=feishu&fsurl={{ .Values.alertmanager.prometheusalertWebHook.feishu.url }}"
+      {{- end }}
+      {{- if .Values.alertmanager.prometheusalertWebHook.dingding.enabled }}
+      - url: "http://{{ include "prometheusAlert.name" . }}:{{ .Values.prometheusAlert.service.port }}/prometheusalert?type=dd&tpl=dingding&ddurl={{ .Values.alertmanager.prometheusalertWebHook.dingding.url }}"
+      {{- end }}
+      {{- if .Values.alertmanager.prometheusalertWebHook.qywechat.enabled }}
+      - url: "http://{{ include "prometheusAlert.name" . }}:{{ .Values.prometheusAlert.service.port }}/prometheusalert?type=wx&tpl=qywechat&wxurl={{ .Values.alertmanager.prometheusalertWebHook.qywechat.url }}"
+      {{- end }}
+      {{- if .Values.alertmanager.prometheusalertWebHook.email.enabled }}
+      - url: "http://{{ include "prometheusAlert.name" . }}:{{ .Values.prometheusAlert.service.port }}/prometheusalert?type=email&tpl=email&email={{ .Values.alertmanager.prometheusalertWebHook.email.receiveEmailUser }}"
+      {{- end }}
 
     # 修改全家桶服务IP, 飞书机器人接口
     # http://[IP:Port]/prometheusalert?type=[类型]&tpl=[模版名]&fsurl[飞书机器人URL]

@@ -35,12 +35,15 @@ data:
 
     PushInterfaceState() {
 
+        # NameSpace
+        NameSpace="default"
+
         # 接口
         Interface=(
-            js-design-server.default.svc.cluster.local:3002/health/check
-            js-design-svc-hedwig.default.svc.cluster.local:3011/api/microservice/message/health/check
-            js-design-svc-norris.default.svc.cluster.local:9001/resource-permission/health/check
-            nginx-service.default.svc.cluster.local:80
+            js-design-server.${NameSpace}.svc.cluster.local:3002/health/check
+            js-design-hedwig.${NameSpace}.svc.cluster.local:3011/api/microservice/message/health/check
+            js-design-norris.${NameSpace}.svc.cluster.local:9001/resource-permission/health/check
+            js-design-nginx.${NameSpace}.svc.cluster.local:80
         )
 
         # 时间

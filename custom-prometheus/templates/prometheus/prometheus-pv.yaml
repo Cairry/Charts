@@ -1,0 +1,13 @@
+{{- if .Values.prometheus.storageSpec.createPVC }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.prometheus.storageSpec.createPVC.persistentVolumeClaim.claimName }}
+spec:
+  storageClassName: "{{ .Values.prometheus.storageSpec.createPVC.persistentVolumeClaim.storageClassName }}"
+  accessModes:
+    - {{ .Values.prometheus.storageSpec.createPVC.persistentVolumeClaim.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.storageSpec.createPVC.persistentVolumeClaim.storageSize }}
+{{- end }}

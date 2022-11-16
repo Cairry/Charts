@@ -1,0 +1,13 @@
+{{- if .Values.grafana.storageSpec.createPVC }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.grafana.storageSpec.createPVC.persistentVolumeClaim.claimName }}
+spec:
+  storageClassName: "{{ .Values.grafana.storageSpec.createPVC.persistentVolumeClaim.storageClassName }}"
+  accessModes:
+    - {{ .Values.grafana.storageSpec.createPVC.persistentVolumeClaim.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.storageSpec.createPVC.persistentVolumeClaim.storageSize }}
+{{- end }}

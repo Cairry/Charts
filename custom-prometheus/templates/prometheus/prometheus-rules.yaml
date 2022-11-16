@@ -82,14 +82,14 @@ data:
           annotations:
             summary: "{{`{{ $labels.instance }}`}}内存使用率过高"
             description: "{{`{{ $labels.instance }}`}}的内存使用率超过80%,当前使用率[{{`{{ $value }}`}}],需要排查处理"
-        - alert: InstanceDown
+        - alert: Exporter Componen is Down
           expr: up == 0
-          for: 2s
+          for: 1m
           labels:
-            severity: critical
-          annotations:   
-            summary: "{{`{{ $labels.instance }}`}}: 服务器宕机"
-            description: "{{`{{ $labels.instance }}`}}: 服务器延时超过2分钟"
+            severity: serious
+          annotations:
+            summary: "节点: {{ $labels.instance }} Exporter 程序"
+            description: "节点: {{ $labels.instance }} Exporter程序异常 请及时处理！."
         - alert: 物理节点磁盘的IO性能
           expr: 100-(avg(irate(node_disk_io_time_seconds_total[1m])) by(instance)* 100) < 60
           for: 2s

@@ -1,5 +1,5 @@
 global:
-  namespace: '{{ PromNs }}'
+  namespace: monitoring
 
 nodeExporter:
   image:

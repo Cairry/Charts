@@ -9,6 +9,18 @@ metadata:
 spec:
   template:
     spec:
+
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:  # 硬策略
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - prometheus
+            topologyKey: kubernetes.io/hostname
+
       restartPolicy: Never
       containers:
       - name: init

@@ -31,6 +31,13 @@ data:
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
     - job_name: 'kubernetes-node-cadvisor'
+      metric_relabel_configs:
+      - source_labels: [instance]
+        separator: ;
+        regex: (.+)
+        target_label: node
+        replacement: $1
+        action: replace
       kubernetes_sd_configs:
       - role:  node
       scheme: https

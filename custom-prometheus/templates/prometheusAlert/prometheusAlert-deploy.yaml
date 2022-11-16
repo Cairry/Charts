@@ -24,7 +24,9 @@ spec:
         image: "{{ .Values.prometheusAlert.image.repository }}:{{ .Values.prometheusAlert.image.tag }}"
         imagePullPolicy: {{ .Values.prometheusAlert.image.imagePullPolicy }}
         command:
-          - /app/PrometheusAlert
+          - "/bin/sh"
+          - "-c"
+          - "mv /PrometheusAlertDB.db_bak /app/db/PrometheusAlertDB.db && /app/PrometheusAlert"
         ports:
         - containerPort: 8080
           protocol: TCP

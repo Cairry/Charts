@@ -26,6 +26,10 @@ spec:
       - name: namesrv 
         image: "{{ .Values.namesrv.image}}:{{ .Values.namesrv.imageTag }}"
         imagePullPolicy: {{ .Values.namesrv.imagePullPolicy }}
+        
+        env:
+        - name: JAVA_OPT_EXT
+          value: {{ .Values.namesrv.config.javaOptExt }}
 
         command: ["sh","mqnamesrv"]
 

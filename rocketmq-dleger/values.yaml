@@ -6,6 +6,9 @@ namesrv:
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
 
+  config: 
+    javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
+
   replicas: 3
 
   service:
@@ -72,6 +75,9 @@ broker:
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
 
+  config: 
+    javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
+
   replicas: 3
 
   service:
@@ -87,7 +93,7 @@ broker:
   resources: 
     limits:
       cpu: 4
-      memory: 9Gi
+      memory: 8Gi
     requests:
       cpu: 1m
       memory: 2Gi

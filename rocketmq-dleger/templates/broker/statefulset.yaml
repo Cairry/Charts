@@ -39,6 +39,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: JAVA_OPT_EXT
+          value: {{ .Values.broker.config.javaOptExt }}
 
         ports:
         - name: http

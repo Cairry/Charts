@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "console.fullname" . }}-console
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "console.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.console.replicas }}
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "console.labels" . | nindent 8 }}
+    spec:
+    {{- with .Values.console.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+        - name: console
+          image: "{{ .Values.console.image}}:{{ .Values.console.imageTag }}"
+          imagePullPolicy: {{ .Values.console.imagePullPolicy }}
+
+          env:
+          - name: "JAVA_OPTS"
+            value: "-Drocketmq.namesrv.addr=rocketmq-namesrv-0.rocketmq-namesrv.default:9876;rocketmq-namesrv-1.rocketmq-namesrv.default:9876;rocketmq-namesrv-2.rocketmq-namesrv.default:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.console.service.targetPort }}
+              protocol: TCP
+
+          {{- if .Values.console.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /health/check
+              port: {{ .Values.console.service.targetPort }}
+              httpHeaders:
+                - name: Referer
+                  value: health_check
+              {{- toYaml .Values.console.readinessProbe.config | nindent 12 }}
+          {{- end }}
+
+          {{- if .Values.console.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /health/check
+              port: {{ .Values.console.service.targetPort }}
+              httpHeaders:
+                - name: Referer
+                  value: health_check
+              {{- toYaml .Values.console.ivenessProbe.config | nindent 12 }}
+            {{- end }}
+            
+          resources:
+            {{- toYaml .Values.console.resources | nindent 12 }}
+
+    {{- with .Values.console.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+    {{- if .Values.console.podAntiAffinityEnabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "console.selectorLabels" . | nindent 20 }}
+              weight: 1
+    {{- end }}
+              
+    {{- with .Values.console.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

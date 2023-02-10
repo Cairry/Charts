@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "namesrv.fullname" . }}-namesrv
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "namesrv.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "namesrv.fullname" . }}-namesrv
+  replicas: {{ .Values.namesrv.replicas }}
+  selector:
+    matchLabels:
+      {{- include "namesrv.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "namesrv.labels" . | nindent 8 }}
+    spec:
+    {{- with .Values.namesrv.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+      # hostNetwork: true
+      containers:
+      - name: namesrv 
+        image: "{{ .Values.namesrv.image}}:{{ .Values.namesrv.imageTag }}"
+        imagePullPolicy: {{ .Values.namesrv.imagePullPolicy }}
+
+        command: ["sh","mqnamesrv"]
+
+        ports:
+        - name: http
+          containerPort: {{ .Values.namesrv.service.targetPort }}
+          protocol: TCP
+
+        {{- if .Values.namesrv.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - /assets
+          {{- toYaml .Values.namesrv.readinessProbe.config | nindent 10 }}
+        {{- end }}
+
+        {{- if .Values.namesrv.livenessProbe.enabled }}
+        livenessProbe:
+          {{- toYaml .Values.namesrv.livenessProbe.config | nindent 10 }}
+        {{- end }}
+
+        resources:
+          {{- toYaml .Values.namesrv.resources | nindent 10 }}
+
+        volumeMounts:
+          - name: host-time
+            mountPath: /etc/localtime
+          - name: logs
+            mountPath: /home/rocketmq/logs
+
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+          
+        - name: logs
+          hostPath:
+            path: /opt/rocketmq/name/logs
+
+      {{- with .Values.namesrv.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+    {{- if .Values.namesrv.podAntiAffinityEnabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "namesrv.selectorLabels" . | nindent 20 }}
+              weight: 1
+    {{- end }}
+
+          
+    {{- with .Values.namesrv.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

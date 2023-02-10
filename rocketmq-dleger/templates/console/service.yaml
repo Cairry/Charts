@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "console.fullname" . }}-console
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "console.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.console.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.console.service.targetPort }}
+  selector:
+    {{- include "console.selectorLabels" . | nindent 4 }}
+  sessionAffinity: None
+  type: NodePort
+  
+

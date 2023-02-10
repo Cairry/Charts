@@ -1,0 +1,99 @@
+
+namesrv: 
+
+  image: "apache/rocketmq"
+  imageTag: "4.9.3"
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  replicas: 3
+
+  service:
+    port: 9876
+    targetPort: 9876
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  resources: 
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 1m
+      memory: 1Gi
+
+  nodeSelector: []
+
+  tolerations: []
+
+  podAntiAffinityEnabled: {}
+
+console:
+
+  image: "apacherocketmq/rocketmq-console"
+  imageTag: "2.0.0"
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  replicas: 3
+
+  service:
+    port: 8080
+    targetPort: 8080
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  resources: 
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  nodeSelector: []
+
+  tolerations: []
+
+  podAntiAffinityEnabled: {}
+
+broker:
+
+  image: "apache/rocketmq"
+  imageTag: "4.9.3"
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  replicas: 3
+
+  service:
+    port: 40911
+    targetPort: 40911
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  resources: 
+    limits:
+      cpu: 4
+      memory: 9Gi
+    requests:
+      cpu: 1m
+      memory: 2Gi
+
+  nodeSelector: []
+
+  tolerations: []
+
+  podAntiAffinityEnabled: {}

@@ -97,3 +97,37 @@ broker:
   tolerations: []
 
   podAntiAffinityEnabled: {}
+
+proxy: 
+
+  image: "registry.js.design/nginx/js-design-sourcecode-nginx-v2"
+  imageTag: "1.18.0"
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+
+  replicas: 3
+
+  service:
+    port: 9888
+    targetPort: 9888
+    nodePort: 29888
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  resources: 
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+  nodeSelector: []
+
+  tolerations: []
+
+  podAntiAffinityEnabled: {}

@@ -28,7 +28,7 @@ data:
     # # 设置broker节点所在服务器的ip地址（**这个非常重要,主从模式下，从节点会根据主节点的brokerIP2来同步数据，如果不配置，主从无法同步，brokerIP1设置为自己外网能访问的ip，服务器双网卡情况下必须配置，比如阿里云这种，主节点需要配置ip1和ip2，从节点只需要配置ip1即可）
     brokerIP1 = {{`{{ POD_IP }}`}}
     #nameServer地址，分号分割
-    namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv.default:9876;rocketmq-namesrv-1.rocketmq-namesrv.default:9876;rocketmq-namesrv-2.rocketmq-namesrv.default:9876
+    namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless.default:9876
     #Broker 对外服务的监听端口,
     listenPort = 12911
     #是否允许Broker自动创建Topic
@@ -49,7 +49,7 @@ data:
     # DLedger 多副本即主从切换
     enableDLegerCommitLog=true
     dLegerGroup=broker-dledger
-    dLegerPeers=n0-rocketmq-broker-0.rocketmq-broker.default:40911;n1-rocketmq-broker-1.rocketmq-broker.default:40911;n2-rocketmq-broker-2.rocketmq-broker.default:40911
+    dLegerPeers=n0-rocketmq-broker-0.rocketmq-broker-headless.default:40911;n1-rocketmq-broker-1.rocketmq-broker-headless.default:40911;n2-rocketmq-broker-2.rocketmq-broker-headless.default:40911
     ## must be unique,唯一ID
     dLegerSelfId=n{{`{{ POD_ID }}`}}
     sendMessageThreadPoolNums=16

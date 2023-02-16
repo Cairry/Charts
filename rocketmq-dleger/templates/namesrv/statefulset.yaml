@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "namesrv.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ include "namesrv.fullname" . }}-namesrv
+  serviceName: {{ include "namesrv.fullname" . }}-namesrv-headless
   replicas: {{ .Values.namesrv.replicas }}
   selector:
     matchLabels:

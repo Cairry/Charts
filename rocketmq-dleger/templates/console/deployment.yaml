@@ -32,7 +32,7 @@ spec:
 
           env:
           - name: "JAVA_OPTS"
-            value: "-Drocketmq.namesrv.addr=rocketmq-namesrv-0.rocketmq-namesrv.default:9876;rocketmq-namesrv-1.rocketmq-namesrv.default:9876;rocketmq-namesrv-2.rocketmq-namesrv.default:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+            value: "-Drocketmq.namesrv.addr=rocketmq-namesrv-0.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless.default:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
 
           ports:
             - name: http

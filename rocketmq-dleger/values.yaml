@@ -12,8 +12,10 @@ namesrv:
   replicas: 3
 
   service:
+    type: ClusterIP
     port: 9876
     targetPort: 9876
+    nodePort: 29876
 
   readinessProbe:
     enabled: false
@@ -103,6 +105,17 @@ broker:
   tolerations: []
 
   podAntiAffinityEnabled: {}
+
+  metrics:
+    enabled: true
+    image: "sawyerlan/rocketmq-exporter"
+    imageTag: "latest"
+    imagePullSecrets: []
+    imagePullPolicy: IfNotPresent
+
+    service:
+      type: NodePort
+      nodePort: "20557"
 
 proxy: 
 

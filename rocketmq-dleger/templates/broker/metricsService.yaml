@@ -1,0 +1,22 @@
+{{- if .Values.broker.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "broker.fullname" . }}-broker-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "broker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.broker.metrics.service.type }}
+  ports:
+    - name: metrics
+      port: 5557
+      protocol: TCP
+      targetPort: 5557
+      {{- if (eq .Values.broker.metrics.service.type "NodePort") }}
+      nodePort: {{ .Values.broker.metrics.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "broker.selectorLabels" . | nindent 4 }}
+  sessionAffinity: None
+{{- end }}

@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "broker.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ include "broker.fullname" . }}-broker
+  serviceName: {{ include "broker.fullname" . }}-broker-headless
   replicas: {{ .Values.broker.replicas }}
   selector:
     matchLabels:
@@ -80,7 +80,20 @@ spec:
           - name: conf
             mountPath: /home/rocketmq/rocketmq-4.9.3/conf/setup.sh
             subPath: setup.sh
-          
+      
+      {{- if .Values.broker.metrics.enabled }}
+      - name: metrics
+        image: "{{ .Values.broker.metrics.image}}:{{ .Values.broker.metrics.imageTag }}"
+        imagePullPolicy: {{ .Values.broker.metrics.imagePullPolicy }}
+        args:
+        # - "--rocketmq.config.namesrvAddr={{ include "namesrv.fullname" . }}-namesrv:9876"
+        - "--rocketmq.config.namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless.default:9876"
+        ports:
+        - name: http
+          containerPort: 5557
+          protocol: TCP
+      {{- end }}
+
       volumes:
         - name: host-time
           hostPath:

@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "namesrv.fullname" . }}-namesrv
+  name: {{ include "namesrv.fullname" . }}-namesrv-headless
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "namesrv.labels" . | nindent 4 }}
 spec:
+  type: ClusterIP
   clusterIP: None
   ports:
     - name: http
@@ -15,4 +16,24 @@ spec:
   selector:
     {{- include "namesrv.selectorLabels" . | nindent 4 }}
 
+---
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "namesrv.fullname" . }}-namesrv
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "namesrv.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.namesrv.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.namesrv.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.namesrv.service.targetPort }}
+      {{- if (eq .Values.namesrv.service.type "NodePort" ) }}
+      nodePort: {{ .Values.namesrv.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "namesrv.selectorLabels" . | nindent 4 }}

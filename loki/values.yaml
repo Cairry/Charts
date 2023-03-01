@@ -1,0 +1,98 @@
+test_pod:
+  image: registry.js.design/grafana/bats/bats:v1.1.0
+  pullPolicy: IfNotPresent
+
+loki:
+  enabled: true
+  storage:
+    # 限制查询数据的时间
+    max_look_back_period: '0'
+    # 存储保留时间
+    retention_period: {{ retention_period_date }}
+    # 打开存储保留时间开关
+    retention_deletes_enabled: true
+    # filesystem or s3
+    type: {{ storage_type }}
+    s3: "s3://qO8gZfJiRiDrL1vs:TVouslemWg6Y0rj2oG6SRtlKnjGyDyFdyFbBD2xX@minio.xiaopiu.svc:9000/loki"
+    # # Configures how the index is updated and stored.
+  image:
+    repository: registry.js.design/grafana/loki
+    tag: 2.6.1
+    pullPolicy: IfNotPresent
+
+  url: http://{{(include "loki.serviceName" .)}}:{{ .Values.loki.service.port }}
+
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: http-metrics
+    initialDelaySeconds: 45
+
+  persistence:
+    # 是否使用持久化存储，当 loki.storage.type 为 filesystem 时需要开启。
+    enabled: true
+    # 使用动态供给
+    storageClassName: local-path
+    # 使用已存在的pvc
+    # existingClaim: {}
+
+
+promtail:
+  enabled: true
+  image:
+    registry: registry.js.design
+    # -- Docker image repository
+    repository: grafana/promtail
+    # -- Overrides the image tag whose default is the chart's appVersion
+    tag: 2.6.1
+    pullPolicy: IfNotPresent
+
+  defaultVolumes:
+    - name: run
+      hostPath:
+        path: /run/promtail
+    - name: containers
+      hostPath:
+        path: /data/lib/docker/containers
+    - name: pods
+      hostPath:
+        path: /var/log/pods
+    - name: kubelet
+      hostPath:
+        path: /data/lib/kubelet/pods/
+
+  # -- Default volume mounts. Corresponds to `volumes`.
+  # @default -- See `values.yaml`
+  defaultVolumeMounts:
+    - name: run
+      mountPath: /run/promtail
+    - name: containers
+      mountPath: /data/lib/docker/containers
+      readOnly: true
+    - name: pods
+      mountPath: /var/log/pods
+      readOnly: true
+    - name: kubelet
+      mountPath: /data/lib/kubelet/pods/
+      readOnly: true
+
+  config:
+    logLevel: info
+    serverPort: 3101
+    clients:
+      - url: http://{{ .Release.Name }}:3100/loki/api/v1/push
+
+# proxy is currently only used by loki test pod
+# Note: If http_proxy/https_proxy are set, then no_proxy should include the
+# loki service name, so that tests are able to communicate with the loki
+# service.
+proxy:
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""

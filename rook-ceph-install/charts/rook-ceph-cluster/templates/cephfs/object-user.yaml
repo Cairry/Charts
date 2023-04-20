@@ -1,0 +1,15 @@
+#################################################################################################################
+# Create an object store user for access to the s3 endpoint.
+#  kubectl create -f object-user.yaml
+#################################################################################################################
+
+{{- with .Values.object.CephObjectStoreUser }}
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  store: {{ .objectStoreName }}
+  displayName: "my display name"
+{{- end }}

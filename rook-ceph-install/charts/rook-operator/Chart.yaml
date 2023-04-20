@@ -1,0 +1,8 @@
+apiVersion: v1
+appVersion: 1.2.7
+description: File, Block, and Object Storage Services for your Cloud-Native Environment
+icon: https://rook.io/images/rook-logo.svg
+name: rook-operator
+sources:
+- https://github.com/rook/rook
+version: 1.2.7-v1.2.0.20

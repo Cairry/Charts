@@ -1,0 +1,15 @@
+{{- if .Values.monitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ceph-exporter
+  labels:
+    app: rook-ceph-mgr
+spec:
+  selector:
+    matchLabels:
+      app: rook-ceph-mgr
+  endpoints:
+  - port: http-metrics
+    interval: 30s
+{{- end }}

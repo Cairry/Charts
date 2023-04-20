@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ceph-check-job
+  labels:
+    app: ceph-check-job
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      containers:
+      - image: {{ $.Values.check_job.image }}
+        name: kubectl-box
+        command: ["/bin/bash", "/root/check-ceph-cluster.sh"]
+        volumeMounts:
+        - mountPath: /root/check-ceph-cluster.sh
+          name: check-ceph-cluster-sh
+          subPath: check-ceph-cluster.sh
+          readOnly: true
+        - mountPath: /root/.kube/config
+          name: kube-config
+          readOnly: true
+      volumes:
+      - name: check-ceph-cluster-sh
+        configMap:
+          name: check-ceph-cluster-sh
+      - name: kube-config
+        hostPath:
+          path: /root/.kube/config
+          type: File
+      restartPolicy: "OnFailure"
+      hostNetwork: true

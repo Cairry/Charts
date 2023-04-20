@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2019-11-16T03:55:24Z
+  labels:
+    app: ceph-check-job
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: check-ceph-cluster-sh
+data:
+  check-ceph-cluster.sh: |
+    #!/bin/bash
+    
+    while [ 1 ];
+    do
+      kubectl get cephcluster -n {{ $.Release.Namespace }} |grep -v NAME |grep "Created" |grep "HEALTH_OK"
+      if [ $? -eq 0 ]; then
+        ROOK_OPERATOR_NAME=$(kubectl -n {{ $.Release.Namespace }} get po |grep rook-ceph-operator |awk '{print $1}')
+        kubectl -n {{ $.Release.Namespace }} logs $ROOK_OPERATOR_NAME |grep "created object store my-store"
+        if [ $? -eq 0 ]; then
+          exit 0
+        fi
+        echo "=============================="
+        kubectl -n {{ $.Release.Namespace }} exec -it `kubectl get po -n {{ $.Release.Namespace }} |grep "rook-ceph-tools-" |awk '{print $1}'` ceph status
+      fi
+      echo "============================="
+      kubectl get cephcluster -n {{ $.Release.Namespace }}
+    done

@@ -1,0 +1,173 @@
+ceph_cluster:
+  image: registry.js.design/rook-ceph/ceph:v14.2.8
+  monCount: ${replica}
+  dashboardEnabled: false
+  hostNetwork: true
+
+
+  #resources of mgr, mon, osd
+  resources:
+    mgr:
+      limits:
+        cpu: "2000m"
+        memory: "20Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+    mon:
+      limits:
+        cpu: "2000m"
+        memory: "20Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+
+  storage_node_selector: #2 method to select sotrage_nodes, you can only choose one
+    node_selector_label:
+        #placement of mon, osd, mgrs
+      disks_smaller_than_100GB: true
+      placement:
+        nodeSelectorTermsMatchExpressions:
+          key: role
+          operator: In
+          values:
+            - storage-node
+      directories:
+      - ${CephPath}/OSD
+      #deviceFilter: "sda"
+
+  #  nodes:
+  #  - name: "172.17.4.101·"
+  #    directories: # specific directories to use for storage can be specified for each nod·e
+  #    - path: "/rook/storage-dir·"
+  #    resources·:
+  #      limits·:
+  #        cpu: "500m·"
+  #        memory: "1024Mi·"
+  #      requests·:
+  #        cpu: "500m·"
+  #        memory: "1024Mi·"
+  #  - name: "172.17.4.201·"
+  #    devices: # specific devices to use for storage can be specified for each nod·e
+  #    - name: "sdb·"
+  #    - name: "nvme01" # multiple osds can be created on high performance device·s
+  #      config·:
+  #        osdsPerDevice: "5·"
+  #    config: # configuration can be specified at the node level which overrides the cluster level confi·g
+  #      storeType: filestor·e
+  #  - name: "172.17.4.301·"
+  #    deviceFilter: "^sd.·"
+
+
+rook_config_override:
+  config: |-
+    [global]
+    osd_pool_default_size = ${replica}
+    [client.radosgw.gateway]
+    "rgw_gc_max_objs" = 256
+    "rgw_gc_obj_min_wait" = 600
+    "rgw_gc_processor_period" = 600
+#修订ceph-mon的数据存储路径默认/var/lib/rook如下enable: true将修改为dataDirHostPath: xxx
+mondir:
+  enable: true
+  dataDirHostPath: ${CephPath}/MON
+
+rbdStorageClass:
+  CephBlockPool:
+    size: ${replica}
+  fstype: xfs
+  reclaimPolicy: Retain
+
+
+#object options uncomment if need the object storage
+object:
+  name: my-store
+  metadataPoolSize: ${replica}
+  dataPoolSize: ${replica}
+  gateway:
+    port: 8099 # 修订前8086
+    instances: ${replica}
+    tls:
+      enabled: false
+      # 当k8s对象存储需要开启https时，将证书以secret的方式存储到k8s相应的namespace下。sslCertificateRef对应secret的名称, securePort对应https端口号
+      # A reference to the secret in the rook namespace where the ssl certificate is stored
+      sslCertificateRef:
+      securePort: 8084
+#    placement: # set the placement of gateway, comment if donnot need
+#      nodeSelectorTermsMatchExpressions:
+#          key: role
+#          operator: In
+#          values:
+#            - rgw-node
+  gatewayExternal:
+    enable: true
+    nodePort: 30080
+    secureNodePort: 30084
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1024Mi"
+    requests:
+      cpu: "500m"
+      memory: "1024Mi"
+  CephObjectStoreUser:
+    name: ceph-object-user
+    #the objectStoreName should be same with rook-ceph-cluster object.name
+    objectStoreName: my-store
+
+
+#filesystem options uncomment if need the object storage
+filesystem:
+  MetadataPoolSize: ${replica}
+  dataPoolsSize: ${replica}
+  activeStandby: true
+  # false == soft , true == hard
+  antiAffinity: true
+#  placement: # set the placement of gateway, comment if donnot need
+  nodeSelectorTermsMatchExpressions:
+      key: role
+      operator: In
+      values:
+        - mds-node
+#  resources:
+#    limits:
+#      cpu: "500m"
+#      memory: "1024Mi"
+#    requests:
+#      cpu: "500m"
+#      memory: "1024Mi"
+
+
+cephfsStorageClass:
+  enabled: true
+  name: cephfs
+  reclaimPolicy: Retain
+  additionCephfsProvisioner:
+    storageClass:
+      reclaimPolicy: Retain
+      cephMonitors: ${MonIplist}
+      claimRoot: /volumes/kubernetes
+    provisioner:
+      replicas: 1
+      strategyType: Recreate
+      image: "registry.js.design/rook-ceph/quay.io/external_storage/cephfs-provisioner:v0.1.0"
+      imagePullPolicy: IfNotPresent
+
+toolbox:
+  image: registry.js.design/rook-ceph/ceph:v1.2.7
+monitor:
+  enabled: false
+check_job:
+  image: registry.js.design/rook-ceph/kubectl-box:1.0.0
+
+
+extraInfo:
+ allImageList:
+    - registry.js.design/rook-ceph/ceph:v14.2.8
+    - registry.js.design/rook-ceph/ceph:v1.2.7
+    - registry.js.design/rook-ceph/csi-resizer:v0.4.0
+    - registry.js.design/rook-ceph/cephcsi:v2.0.0
+    - registry.js.design/rook-ceph/csi-snapshotter:v1.2.2
+    - registry.js.design/rook-ceph/csi-provisioner:v1.4.0
+    - registry.js.design/rook-ceph/csi-node-driver-registrar:v1.2.0
+    - registry.js.design/rook-ceph/csi-attacher:v2.1.0

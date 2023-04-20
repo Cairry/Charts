@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: v14.2.8
+description: rook-ceph-cluster.
+home: http://
+maintainers:
+- email: jianming.jin@js.design 
+  name: jianming
+name: rook-ceph-cluster
+sources:
+- http://
+version: v14.2.8-v1.2.3.5

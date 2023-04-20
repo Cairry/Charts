@@ -1,0 +1,37 @@
+{{- if .Values.object.gatewayExternal.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rook-ceph-rgw
+    ceph_daemon_id: {{ .Values.object.name }}
+    rgw: {{ .Values.object.name }}
+    rook_cluster: {{ $.Release.Namespace }}
+    rook_object_store: {{ .Values.object.name }}
+  name: rook-ceph-rgw-{{ .Values.object.name }}-external
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.object.gateway.port }}
+    protocol: TCP
+    targetPort: {{ .Values.object.gateway.port }}
+    nodePort: {{ .Values.object.gatewayExternal.nodePort }}
+{{- if .Values.object.gateway.tls.enabled }}
+  - name: https
+    port: {{ .Values.object.gateway.tls.securePort }}
+    protocol: TCP
+    targetPort: {{ .Values.object.gateway.tls.securePort }}
+    nodePort: {{ .Values.object.gatewayExternal.secureNodePort }}
+{{- end }}
+  selector:
+    app: rook-ceph-rgw
+    ceph_daemon_id: {{ .Values.object.name }}
+    rgw: {{ .Values.object.name }}
+    rook_cluster: {{ $.Release.Namespace }}
+    rook_object_store: {{ .Values.object.name }}
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+{{- end }}

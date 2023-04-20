@@ -1,0 +1,141 @@
+{{- if .Values.cephfsStorageClass.enabled }}
+{{- if semverCompare "<1.13.0-0" .Capabilities.KubeVersion.GitVersion }}
+{{- with .Values.cephfsStorageClass.additionCephfsProvisioner.storageClass }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: cephfs
+provisioner: ceph.com/cephfs
+allowVolumeExpansion: true
+reclaimPolicy: {{ .reclaimPolicy }}
+parameters:
+    monitors: {{ .cephMonitors }}
+    adminId: admin
+    adminSecretName: rook-ceph-admin-keyring
+    adminSecretNamespace: {{ $.Release.Namespace }}
+    claimRoot: {{ .claimRoot }}
+{{- end }}
+
+---
+
+{{- with .Values.cephfsStorageClass.additionCephfsProvisioner.provisioner }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cephfs-provisioner
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: cephfs-provisioner
+spec:
+  replicas: {{ .replicas }}
+  strategy:
+    type: {{ .strategyType }}
+  selector:
+    matchLabels:
+      app: cephfs-provisioner
+  template:
+    metadata:
+      labels:
+        app: cephfs-provisioner
+    spec:
+      containers:
+      - name: cephfs-provisioner
+        image: {{ .image }}
+        imagePullPolicy: {{ .imagePullPolicy }}
+        env:
+        - name: PROVISIONER_NAME
+          value: ceph.com/cephfs
+        command:
+        - "/usr/local/bin/cephfs-provisioner"
+        args:
+        - "-id=cephfs-provisioner-1"
+        - "-disable-ceph-namespace-isolation=true"
+      serviceAccount: cephfs-provisioner
+{{- end }}
+
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cephfs-provisioner
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    resourceNames: ["kube-dns","coredns"]
+    verbs: ["list", "get"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "get", "delete"]
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cephfs-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: cephfs-provisioner
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cephfs-provisioner
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cephfs-provisioner
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "get", "delete"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cephfs-provisioner
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cephfs-provisioner
+subjects:
+- kind: ServiceAccount
+  name: cephfs-provisioner
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cephfs-provisioner
+  namespace: {{ .Release.Namespace }}
+
+{{- end }}
+{{- end }}
+
+

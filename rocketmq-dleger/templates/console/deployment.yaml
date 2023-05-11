@@ -47,7 +47,7 @@ spec:
               httpHeaders:
                 - name: Referer
                   value: health_check
-              {{- toYaml .Values.console.readinessProbe.config | nindent 12 }}
+            {{- toYaml .Values.console.readinessProbe.config | nindent 12 }}
           {{- end }}
 
           {{- if .Values.console.livenessProbe.enabled }}
@@ -58,9 +58,9 @@ spec:
               httpHeaders:
                 - name: Referer
                   value: health_check
-              {{- toYaml .Values.console.ivenessProbe.config | nindent 12 }}
+            {{- toYaml .Values.console.livenessProbe.config | nindent 12 }}
             {{- end }}
-            
+
           resources:
             {{- toYaml .Values.console.resources | nindent 12 }}
 
@@ -80,7 +80,7 @@ spec:
                     {{- include "console.selectorLabels" . | nindent 20 }}
               weight: 1
     {{- end }}
-              
+
     {{- with .Values.console.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

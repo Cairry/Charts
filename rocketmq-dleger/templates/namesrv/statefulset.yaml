@@ -23,10 +23,10 @@ spec:
 
       # hostNetwork: true
       containers:
-      - name: namesrv 
+      - name: namesrv
         image: "{{ .Values.namesrv.image}}:{{ .Values.namesrv.imageTag }}"
         imagePullPolicy: {{ .Values.namesrv.imagePullPolicy }}
-        
+
         env:
         - name: JAVA_OPT_EXT
           value: {{ .Values.namesrv.config.javaOptExt }}
@@ -40,15 +40,15 @@ spec:
 
         {{- if .Values.namesrv.readinessProbe.enabled }}
         readinessProbe:
-          exec:
-            command:
-              - ls
-              - /assets
+          tcpSocket:
+            port: {{ .Values.namesrv.service.targetPort }}
           {{- toYaml .Values.namesrv.readinessProbe.config | nindent 10 }}
         {{- end }}
 
         {{- if .Values.namesrv.livenessProbe.enabled }}
         livenessProbe:
+          tcpSocket:
+            port: {{ .Values.namesrv.service.targetPort }}
           {{- toYaml .Values.namesrv.livenessProbe.config | nindent 10 }}
         {{- end }}
 
@@ -65,7 +65,7 @@ spec:
         - name: host-time
           hostPath:
             path: /etc/localtime
-          
+
         - name: logs
           hostPath:
             path: /opt/rocketmq/name/logs
@@ -87,7 +87,7 @@ spec:
               weight: 1
     {{- end }}
 
-          
+
     {{- with .Values.namesrv.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

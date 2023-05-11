@@ -22,7 +22,7 @@ spec:
     {{- end }}
 
       containers:
-      - name: broker 
+      - name: broker
         image: "{{ .Values.broker.image}}:{{ .Values.broker.imageTag }}"
         imagePullPolicy: {{ .Values.broker.imagePullPolicy }}
 
@@ -49,15 +49,15 @@ spec:
 
         {{- if .Values.broker.readinessProbe.enabled }}
         readinessProbe:
-          exec:
-            command:
-              - ls
-              - /assets
+          tcpSocket:
+            port: {{ .Values.broker.service.targetPort }}
           {{- toYaml .Values.broker.readinessProbe.config | nindent 10 }}
         {{- end }}
 
         {{- if .Values.broker.livenessProbe.enabled }}
         livenessProbe:
+          tcpSocket:
+            port: {{ .Values.broker.service.targetPort }}
           {{- toYaml .Values.broker.livenessProbe.config | nindent 10 }}
         {{- end }}
 
@@ -80,7 +80,7 @@ spec:
           - name: conf
             mountPath: /home/rocketmq/rocketmq-4.9.3/conf/setup.sh
             subPath: setup.sh
-      
+
       {{- if .Values.broker.metrics.enabled }}
       - name: metrics
         image: "{{ .Values.broker.metrics.image}}:{{ .Values.broker.metrics.imageTag }}"
@@ -108,7 +108,7 @@ spec:
         - name: logs
           hostPath:
             path: /opt/rocketmq/logs
-          
+
 
       {{- with .Values.broker.nodeSelector }}
       nodeSelector:
@@ -127,7 +127,7 @@ spec:
               weight: 1
     {{- end }}
 
-          
+
     {{- with .Values.broker.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

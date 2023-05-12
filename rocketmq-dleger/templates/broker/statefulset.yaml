@@ -89,7 +89,7 @@ spec:
         imagePullPolicy: {{ .Values.broker.metrics.imagePullPolicy }}
         args:
         # - "--rocketmq.config.namesrvAddr={{ include "namesrv.fullname" . }}-namesrv:9876"
-        - "--rocketmq.config.namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless.default:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless.default:9876"
+        - "--rocketmq.config.namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv-headless:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless:9876"
         ports:
         - name: http
           containerPort: 5557

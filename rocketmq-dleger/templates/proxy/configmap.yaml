@@ -45,8 +45,8 @@ data:
 
         sendfile        on;
         #tcp_nopush     on;
-        real_ip_recursive on; 
-        set_real_ip_from 10.233.0.0/16; 
+        real_ip_recursive on;
+        set_real_ip_from 10.233.0.0/16;
         real_ip_header X-Real-IP;
         keepalive_timeout  65;
 
@@ -57,9 +57,9 @@ data:
     }
     stream{
       upstream namesrv{
-          server rocketmq-namesrv-0.rocketmq-namesrv-headless.default:9876 weight=5 max_fails=3 fail_timeout=30s;
-          server rocketmq-namesrv-1.rocketmq-namesrv-headless.default:9876 weight=5 max_fails=3 fail_timeout=30s;
-          server rocketmq-namesrv-2.rocketmq-namesrv-headless.default:9876 weight=5 max_fails=3 fail_timeout=30s;
+          server rocketmq-namesrv-0.rocketmq-namesrv-headless:9876 weight=5 max_fails=3 fail_timeout=30s;
+          server rocketmq-namesrv-1.rocketmq-namesrv-headless:9876 weight=5 max_fails=3 fail_timeout=30s;
+          server rocketmq-namesrv-2.rocketmq-namesrv-headless:9876 weight=5 max_fails=3 fail_timeout=30s;
       }
       server{
         listen 9888;

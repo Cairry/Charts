@@ -41,23 +41,15 @@ spec:
 
           {{- if .Values.console.readinessProbe.enabled }}
           readinessProbe:
-            httpGet:
-              path: /health/check
+            tcpSocket:
               port: {{ .Values.console.service.targetPort }}
-              httpHeaders:
-                - name: Referer
-                  value: health_check
             {{- toYaml .Values.console.readinessProbe.config | nindent 12 }}
           {{- end }}
 
           {{- if .Values.console.livenessProbe.enabled }}
           livenessProbe:
-            httpGet:
-              path: /health/check
+            tcpSocket:
               port: {{ .Values.console.service.targetPort }}
-              httpHeaders:
-                - name: Referer
-                  value: health_check
             {{- toYaml .Values.console.livenessProbe.config | nindent 12 }}
             {{- end }}
 

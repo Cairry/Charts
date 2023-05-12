@@ -25,6 +25,8 @@ spec:
       - name: broker
         image: "{{ .Values.broker.image}}:{{ .Values.broker.imageTag }}"
         imagePullPolicy: {{ .Values.broker.imagePullPolicy }}
+        securityContext:
+          runAsUser: 0
 
         command: ["/bin/sh"]
         # args: ["-c","tail -f /dev/null"]

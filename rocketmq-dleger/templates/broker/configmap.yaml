@@ -1,3 +1,14 @@
+{{- $nameReplicaCount := int .Values.namesrv.replicas }}
+{{- $nameServerList := list }}
+{{- range $i := until $nameReplicaCount }}
+{{- $nameServerList = append $nameServerList (printf "%s-%d.%s" "rocketmq-namesrv" $i "rocketmq-namesrv-headless:9876" ) }}
+{{- end }}
+{{- $brokerReplicaCount := int .Values.broker.replicas }}
+{{- $brokerServerList := list }}
+{{- range $i := until $brokerReplicaCount }}
+{{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%d.%s" $i "rocketmq-broker" $i "rocketmq-broker-headless:40911" ) }}
+{{- end }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,8 +39,8 @@ data:
     # # 设置broker节点所在服务器的ip地址（**这个非常重要,主从模式下，从节点会根据主节点的brokerIP2来同步数据，如果不配置，主从无法同步，brokerIP1设置为自己外网能访问的ip，服务器双网卡情况下必须配置，比如阿里云这种，主节点需要配置ip1和ip2，从节点只需要配置ip1即可）
     brokerIP1 = {{`{{ POD_IP }}`}}
     #nameServer地址，分号分割
-    namesrvAddr=rocketmq-namesrv-0.rocketmq-namesrv-headless:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless:9876
-    #Broker 对外服务的监听端口,
+    # rocketmq-namesrv-0.rocketmq-namesrv-headless:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless:9876
+    namesrvAddr={{ join ";" $nameServerList }}
     listenPort = 12911
     #是否允许Broker自动创建Topic
     autoCreateTopicEnable = true
@@ -49,7 +60,8 @@ data:
     # DLedger 多副本即主从切换
     enableDLegerCommitLog=true
     dLegerGroup=broker-dledger
-    dLegerPeers=n0-rocketmq-broker-0.rocketmq-broker-headless:40911;n1-rocketmq-broker-1.rocketmq-broker-headless:40911;n2-rocketmq-broker-2.rocketmq-broker-headless:40911
+    # n0-rocketmq-broker-0.rocketmq-broker-headless:40911;n1-rocketmq-broker-1.rocketmq-broker-headless:40911;n2-rocketmq-broker-2.rocketmq-broker-headless:40911
+    dLegerPeers={{ join ";" $brokerServerList }}
     ## must be unique,唯一ID
     dLegerSelfId=n{{`{{ POD_ID }}`}}
     sendMessageThreadPoolNums=16

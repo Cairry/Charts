@@ -11,9 +11,10 @@ spec:
       port: {{ .Values.console.service.port }}
       protocol: TCP
       targetPort: {{ .Values.console.service.targetPort }}
+      {{- if ( eq .Values.console.service.type "NodePort" ) }}
+      nodePort: {{ .Values.console.service.nodePort }}
+      {{- end }}
   selector:
     {{- include "console.selectorLabels" . | nindent 4 }}
   sessionAffinity: None
-  type: NodePort
-  
-
+  type: {{ .Values.console.service.type }}

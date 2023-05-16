@@ -69,8 +69,6 @@ spec:
         volumeMounts:
           - name: host-time
             mountPath: /etc/localtime
-          - name: logs
-            mountPath: /home/rocketmq/logs
           - name: store
             mountPath: /home/rocketmq/store
           - name: conf
@@ -104,13 +102,23 @@ spec:
           configMap:
             defaultMode: 420
             name: {{ include "broker.fullname" . }}-broker
+  {{- if not .Values.broker.persistence.enabled }}
         - name: store
-          hostPath:
-            path: /opt/rocketmq/store
-        - name: logs
-          hostPath:
-            path: /opt/rocketmq/logs
-
+          emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: store
+    spec:
+      accessModes:
+      {{- range .Values.broker.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      storageClassName: {{ .Values.broker.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.broker.persistence.size }}
+  {{- end }}
 
       {{- with .Values.broker.nodeSelector }}
       nodeSelector:

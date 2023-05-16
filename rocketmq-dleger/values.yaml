@@ -142,6 +142,13 @@ broker:
 
   podAntiAffinityEnabled: {}
 
+  persistence:
+    enabled: true
+    storageClass: "local-path"
+    size: 100Gi
+    accessModes:
+    - ReadWriteOnce
+
   metrics:
     enabled: true
     image: "sawyerlan/rocketmq-exporter"

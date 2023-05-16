@@ -7,15 +7,12 @@ metadata:
   labels:
     {{- include "broker.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.broker.metrics.service.type }}
+  type: ClusterIP
   ports:
     - name: metrics
       port: 5557
       protocol: TCP
       targetPort: 5557
-      {{- if (eq .Values.broker.metrics.service.type "NodePort") }}
-      nodePort: {{ .Values.broker.metrics.service.nodePort }}
-      {{- end }}
   selector:
     {{- include "broker.selectorLabels" . | nindent 4 }}
   sessionAffinity: None

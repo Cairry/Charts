@@ -1,3 +1,8 @@
+{{- $nameReplicaCount := int .Values.namesrv.replicas }}
+{{- $nameServerList := list }}
+{{- range $i := until $nameReplicaCount }}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $.Release.Name "namesrv" $i 9876 ) }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,7 +37,7 @@ spec:
 
           env:
           - name: "JAVA_OPTS"
-            value: "-Drocketmq.namesrv.addr=rocketmq-namesrv-0.rocketmq-namesrv-headless:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+            value: "-Drocketmq.namesrv.addr={{ join ";" $nameServerList }} -Dcom.rocketmq.sendMessageWithVIPChannel=false"
 
           ports:
             - name: http

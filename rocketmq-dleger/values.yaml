@@ -111,6 +111,7 @@ broker:
   service:
     port: 40911
     targetPort: 40911
+    nodePort: 40911
 
   readinessProbe:
     enabled: false

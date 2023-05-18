@@ -14,15 +14,15 @@ spec:
       protocol: TCP
       targetPort: {{ .Values.broker.service.targetPort }}
     - name: http2
-      port: 12911
+      port: 42911
       protocol: TCP
-      targetPort: 12911
+      targetPort: 42911
     - name: http3
-      port: 12909
+      port: 42909
       protocol: TCP
-      targetPort: 10909
+      targetPort: 40909
   selector:
     {{- include "broker.selectorLabels" . | nindent 4 }}
   sessionAffinity: None
-  
+
 

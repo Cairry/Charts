@@ -1,12 +1,12 @@
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
 {{- range $i := until $nameReplicaCount }}
-{{- $nameServerList = append $nameServerList (printf "%s-%d.%s" "rocketmq-namesrv" $i "rocketmq-namesrv-headless:9876" ) }}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:2987%d" $.Release.Name "namesrv" $i $i ) }}
 {{- end }}
 {{- $brokerReplicaCount := int .Values.broker.replicas }}
 {{- $brokerServerList := list }}
 {{- range $i := until $brokerReplicaCount }}
-{{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%d.%s" $i "rocketmq-broker" $i "rocketmq-broker-headless:40911" ) }}
+{{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%s-%d:4292%d" $i $.Release.Name "broker" $i $i ) }}
 {{- end }}
 
 apiVersion: v1
@@ -21,7 +21,7 @@ data:
     ProdConfigFile="/home/rocketmq/rocketmq-4.9.3/conf/broker-prod.conf"
     cp ${ConfigFile} ${ProdConfigFile}
     echo -e "\
-    sed -i \"s#{{`{{ POD_IP }}`}}#$POD_IP#\" ${ProdConfigFile}\n
+    sed -i \"s#{{`{{ POD_NAME }}`}}#$POD_NAME#\" ${ProdConfigFile}\n
     sed -i \"s#{{`{{ POD_ID }}`}}#$PodID#\" ${ProdConfigFile} " >sed
     bash sed
 
@@ -37,11 +37,10 @@ data:
     #刷盘策略，取值为：ASYNC_FLUSH，SYNC_FLUSH表示同步刷盘和异步刷盘；SYNC_FLUSH消息写入磁盘后才返回成功状态，ASYNC_FLUSH不需要；
     flushDiskType = SYNC_FLUSH
     # # 设置broker节点所在服务器的ip地址（**这个非常重要,主从模式下，从节点会根据主节点的brokerIP2来同步数据，如果不配置，主从无法同步，brokerIP1设置为自己外网能访问的ip，服务器双网卡情况下必须配置，比如阿里云这种，主节点需要配置ip1和ip2，从节点只需要配置ip1即可）
-    brokerIP1 = {{`{{ POD_IP }}`}}
+    brokerIP1 = {{`{{ POD_NAME }}`}}
     #nameServer地址，分号分割
-    # rocketmq-namesrv-0.rocketmq-namesrv-headless:9876;rocketmq-namesrv-1.rocketmq-namesrv-headless:9876;rocketmq-namesrv-2.rocketmq-namesrv-headless:9876
     namesrvAddr={{ join ";" $nameServerList }}
-    listenPort = 12911
+    listenPort = 4291{{`{{ POD_ID }}`}}
     #是否允许Broker自动创建Topic
     autoCreateTopicEnable = true
     #是否允许 Broker 自动创建订阅组
@@ -60,7 +59,6 @@ data:
     # DLedger 多副本即主从切换
     enableDLegerCommitLog=true
     dLegerGroup=broker-dledger
-    # n0-rocketmq-broker-0.rocketmq-broker-headless:40911;n1-rocketmq-broker-1.rocketmq-broker-headless:40911;n2-rocketmq-broker-2.rocketmq-broker-headless:40911
     dLegerPeers={{ join ";" $brokerServerList }}
     ## must be unique,唯一ID
     dLegerSelfId=n{{`{{ POD_ID }}`}}

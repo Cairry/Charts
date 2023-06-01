@@ -49,11 +49,11 @@ data:
     useEpollNativeSelector = true
 
     #数据存放的根目录
-    #storePathRootDir = /root/store/path
+    storePathRootDir = /home/rocketmq/store
     #commit log保存目录
-    #storePathCommitLog = /root/store/path/commitlog
+    storePathCommitLog = /home/rocketmq/store/commitlog
     #消费队列存储路径存储路径
-    #storePathConsumerQueue = /root/store/path/consumequeue
+    storePathConsumerQueue = /home/rocketmq/store/consumequeue
     slaveReadEnable = true
 
     # DLedger 多副本即主从切换

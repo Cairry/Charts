@@ -94,6 +94,30 @@ spec:
           protocol: TCP
       {{- end }}
 
+
+      {{- with .Values.broker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+    {{- if .Values.broker.podAntiAffinityEnabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "broker.selectorLabels" . | nindent 20 }}
+              weight: 1
+    {{- end }}
+
+
+    {{- with .Values.broker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
       volumes:
         - name: host-time
           hostPath:
@@ -119,26 +143,3 @@ spec:
         requests:
           storage: {{ .Values.broker.persistence.size }}
   {{- end }}
-
-      {{- with .Values.broker.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
-    {{- if .Values.broker.podAntiAffinityEnabled }}
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
-                labelSelector:
-                  matchLabels:
-                    {{- include "broker.selectorLabels" . | nindent 20 }}
-              weight: 1
-    {{- end }}
-
-
-    {{- with .Values.broker.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}

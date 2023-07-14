@@ -1,28 +1,33 @@
+{{- $replicaCount := int .Values.broker.replicas }}
+{{- range $i := until $replicaCount }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "broker.fullname" . }}-broker-headless
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "broker.fullname" $ }}-broker-{{ $i }}
+  namespace: {{ $.Release.Namespace }}
   labels:
-    {{- include "broker.labels" . | nindent 4 }}
+    {{- include "broker.labels" $ | nindent 4 }}
 spec:
-  type: ClusterIP
-  clusterIP: None
+  type: NodePort
   ports:
     - name: http1
-      port: {{ .Values.broker.service.port }}
+      port: 4292{{ $i }}
       protocol: TCP
-      targetPort: {{ .Values.broker.service.targetPort }}
+      targetPort: 4292{{ $i }}
+      nodePort: 4292{{ $i }}
     - name: http2
-      port: 42911
+      port: 4291{{ $i }}
       protocol: TCP
-      targetPort: 42911
+      targetPort: 4291{{ $i }}
+      nodePort: 4291{{ $i }}
     - name: http3
-      port: 42909
+      port: 42908
       protocol: TCP
-      targetPort: 40909
+      targetPort: 40908
+      nodePort: null
   selector:
-    {{- include "broker.selectorLabels" . | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: {{ include "broker.fullname" $ }}-broker-{{ $i }}
   sessionAffinity: None
-
+---
+{{- end }}
 

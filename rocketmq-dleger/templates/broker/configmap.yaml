@@ -1,7 +1,7 @@
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
 {{- range $i := until $nameReplicaCount }}
-{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:2987%d" $.Release.Name "namesrv" $i $i ) }}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:9876" $.Release.Name "namesrv" $i ) }}
 {{- end }}
 {{- $brokerReplicaCount := int .Values.broker.replicas }}
 {{- $brokerServerList := list }}

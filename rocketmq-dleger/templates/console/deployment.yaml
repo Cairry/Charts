@@ -1,7 +1,8 @@
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
 {{- range $i := until $nameReplicaCount }}
-{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $.Release.Name "namesrv" $i 9876 ) }}
+{{- $namesrvName := include "namesrv.fullname" $ -}}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $namesrvName "namesrv" $i 9876 ) }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment
@@ -41,20 +42,20 @@ spec:
 
           ports:
             - name: http
-              containerPort: {{ .Values.console.service.targetPort }}
+              containerPort: 8080
               protocol: TCP
 
           {{- if .Values.console.readinessProbe.enabled }}
           readinessProbe:
             tcpSocket:
-              port: {{ .Values.console.service.targetPort }}
+              port: 8080
             {{- toYaml .Values.console.readinessProbe.config | nindent 12 }}
           {{- end }}
 
           {{- if .Values.console.livenessProbe.enabled }}
           livenessProbe:
             tcpSocket:
-              port: {{ .Values.console.service.targetPort }}
+              port: 8080
             {{- toYaml .Values.console.livenessProbe.config | nindent 12 }}
             {{- end }}
 

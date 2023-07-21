@@ -10,8 +10,8 @@ spec:
   clusterIP: None
   ports:
     - name: http
-      port: {{ .Values.namesrv.service.port }}
+      port: {{ $.Values.namesrv.service.ports.namesrv }}
       protocol: TCP
-      targetPort: {{ .Values.namesrv.service.targetPort }}
+      targetPort: 9876
   selector:
     {{- include "namesrv.selectorLabels" . | nindent 4 }}

@@ -10,7 +10,7 @@ spec:
     - name: http
       port: {{ .Values.console.service.port }}
       protocol: TCP
-      targetPort: {{ .Values.console.service.targetPort }}
+      targetPort: 8080
       {{- if ( eq .Values.console.service.type "NodePort" ) }}
       nodePort: {{ .Values.console.service.nodePort }}
       {{- end }}

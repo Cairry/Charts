@@ -4,13 +4,19 @@
  * @Date: 2023-02-10 12:06:15
  * @Description:
 -->
+
 # 简介
-公司在架构层面想做一些列的优化达到一定的数据量的支撑，由此在与其他 MQ 做了一些列的对比发现RocketMQ更加适合公司的业务，并且Rocket相比较于其他的MQ更加牛逼，因此对RocketMQ做了相关的调研，以及高可用架构的方案实施，发现官方并没有做相应的 Helm Chart，只有二进制、Docker部署，为了减少在生产应用后的维护成本，决定自己来维护一个 Chart，也锻炼写Chart的能力，其实RocketMQ 的chart写起来蛮简单的，涉及的复杂层面几乎没有，直接堆就完了。
+
+公司在架构层面想做一些列的优化达到一定的数据量的支撑，由此在与其他 MQ 做了一些列的对比发现 RocketMQ 更加适合公司的业务，并且 Rocket 相比较于其他的 MQ 更加牛逼，因此对 RocketMQ 做了相关的调研，以及高可用架构的方案实施，发现官方并没有做相应的 Helm Chart，只有二进制、Docker 部署，为了减少在生产应用后的维护成本，决定自己来维护一个 Chart，也锻炼写 Chart 的能力，其实 RocketMQ 的 chart 写起来蛮简单的，涉及的复杂层面几乎没有，直接堆就完了。
 
 # 安装手册
+
 > 主要需要三台节点来组成 Dleger 集群，broker Pod 不能调度到同一台节点上。
+
 ## 部署前置操作
+
 > 修改 CoreDNS 配置容器 hosts 全局解析
+
 ```
         // 添加如下配置
         hosts {
@@ -20,21 +26,25 @@
           fallthrough	// 必须添加，否则影响解析
         }
 ```
+
 > 重启 CoreDNS Pod
+
 ## 获取项目
+
 ```
 # git clone https://github.com/Cairry/Charts.git
 # cd rocketmq-dleger
 ```
+
 ## 安装应用
-> 由于服务启动顺序问题，broker、proxy服务出现重新是正常现象，如果出现多（2）次以上重启说明服务有问题，再进一步排查。
+
 ```
 # helm upgrade -i -f values.yaml rocketmq .
 
 # kubectl get po | grep rocketmq
-rocketmq-broker-0                  2/2     Running   2          115s
-rocketmq-broker-1                  2/2     Running   2          135s
-rocketmq-broker-2                  2/2     Running   2          155s
+rocketmq-broker-0                  2/2     Running   0          115s
+rocketmq-broker-1                  2/2     Running   0          135s
+rocketmq-broker-2                  2/2     Running   0          155s
 rocketmq-console-b9f5b9b75-bgxms   1/1     Running   0          115s
 rocketmq-console-b9f5b9b75-fm74c   1/1     Running   0          115s
 rocketmq-console-b9f5b9b75-jnmp4   1/1     Running   0          115s
@@ -44,10 +54,9 @@ rocketmq-namesrv-2                 1/1     Running   0          77s
 
 # kubectl get svc
 NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                           AGE
-rocketmq-broker-0           NodePort    10.233.12.39    <none>        42920:42920/TCP,42910:42910/TCP,42908:53111/TCP   14m
-rocketmq-broker-1           NodePort    10.233.49.249   <none>        42921:42921/TCP,42911:42911/TCP,42908:49458/TCP   14m
-rocketmq-broker-2           NodePort    10.233.37.160   <none>        42922:42922/TCP,42912:42912/TCP,42908:52440/TCP   14m
-rocketmq-broker-headless    ClusterIP   None            <none>        40911/TCP,42911/TCP,42909/TCP                     14m
+rocketmq-broker-0           NodePort    10.233.12.39    <none>        10910:42920/TCP,20910:42910/TCP,42908:53111/TCP   14m
+rocketmq-broker-1           NodePort    10.233.49.249   <none>        10910:42921/TCP,20910:42911/TCP,42908:49458/TCP   14m
+rocketmq-broker-2           NodePort    10.233.37.160   <none>        10910:42922/TCP,20910:42912/TCP,42908:52440/TCP   14m
 rocketmq-broker-metrics     ClusterIP   10.233.6.40     <none>        5557/TCP                                          14m
 rocketmq-console            NodePort    10.233.54.32    <none>        8080:28080/TCP                                    14m
 rocketmq-namesrv-0          NodePort    10.233.26.43    <none>        9876:29870/TCP                                    14m
@@ -55,10 +64,31 @@ rocketmq-namesrv-1          NodePort    10.233.46.239   <none>        9876:29871
 rocketmq-namesrv-2          NodePort    10.233.48.19    <none>        9876:29872/TCP                                    14m
 rocketmq-namesrv-headless   ClusterIP   None            <none>        9876/TCP                                          14m
 ```
+
+## 扩容 Broker 节点
+
+修改`values`中`broker.replicas`改成期望值即可
+
+```
+broker:
+
+  ···
+  replicas: 6
+
+```
+
+更新配置
+
+```
+# helm upgrade -i -f values.yaml rocketmq .
+```
+
 ## 访问控制台
+
 `http://${IP}:28080`
 
 ## 生产消费测试
+
 ```
 # 终端一（生产）
 [root@rocketmq-broker-0 bin]# export NAMESRV_ADDR=rocketmq-namesrv-headless:9876
@@ -91,14 +121,18 @@ ConsumeMessageThread_please_rename_unique_group_name_4_6 Receive New Messages: [
 ```
 
 ## 程序客户端连接
+
 > 由于是本地开发环境需要在本地修改 hosts 解析到相关域名，如果是 k8s 集群内部则不需要该操作，因为前面修改过 CoreDNS 全局解析。
+
 ```
 $ sudo vi /etc/hosts
 192.168.1.176 rocketmq-namesrv-0 rocketmq-broker-0
 192.168.1.177 rocketmq-namesrv-1 rocketmq-broker-1
 192.168.1.178 rocketmq-namesrv-2 rocketmq-broker-2
 ```
+
 运行程序
+
 ```
 package main
 
@@ -204,7 +238,9 @@ func SubcribeMessage() {
 	}
 }
 ```
+
 返回
+
 ```
 INFO[0000] the MessageQueue changed, version also updated  changeTo=1684321477905051000 changedFrom=1684321477851802000
 INFO[0000] The PullThresholdForTopic is changed          changeTo=5120 changedFrom=25600

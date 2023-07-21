@@ -35,20 +35,20 @@ spec:
 
         ports:
         - name: http
-          containerPort: {{ .Values.namesrv.service.targetPort }}
+          containerPort: 9876
           protocol: TCP
 
         {{- if .Values.namesrv.readinessProbe.enabled }}
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.namesrv.service.targetPort }}
+            port: 9876
           {{- toYaml .Values.namesrv.readinessProbe.config | nindent 10 }}
         {{- end }}
 
         {{- if .Values.namesrv.livenessProbe.enabled }}
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.namesrv.service.targetPort }}
+            port: 9876
           {{- toYaml .Values.namesrv.livenessProbe.config | nindent 10 }}
         {{- end }}
 

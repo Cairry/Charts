@@ -1,12 +1,15 @@
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
 {{- range $i := until $nameReplicaCount }}
-{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:9876" $.Release.Name "namesrv" $i ) }}
+{{- $namesrvName := include "namesrv.fullname" $ -}}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $namesrvName "namesrv" $i 9876 ) }}
 {{- end }}
 {{- $brokerReplicaCount := int .Values.broker.replicas }}
 {{- $brokerServerList := list }}
 {{- range $i := until $brokerReplicaCount }}
-{{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%s-%d:4292%d" $i $.Release.Name "broker" $i $i ) }}
+{{- $port := add $.Values.broker.service.nodePorts.dledger $i 1 }}
+{{- $brokerName := include "broker.fullname" $ -}}
+{{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%s-%d:%d" $i $brokerName "broker" $i $port ) }}
 {{- end }}
 
 apiVersion: v1
@@ -40,7 +43,7 @@ data:
     brokerIP1 = {{`{{ POD_NAME }}`}}
     #nameServer地址，分号分割
     namesrvAddr={{ join ";" $nameServerList }}
-    listenPort = 4291{{`{{ POD_ID }}`}}
+    listenPort = {{ .Values.broker.service.ports.broker }}
     #是否允许Broker自动创建Topic
     autoCreateTopicEnable = true
     #是否允许 Broker 自动创建订阅组

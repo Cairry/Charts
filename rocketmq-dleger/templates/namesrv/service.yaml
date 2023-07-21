@@ -11,10 +11,10 @@ spec:
   type: NodePort
   ports:
     - name: http
-      port: {{ $.Values.namesrv.service.port }}
+      port: {{ $.Values.namesrv.service.ports.namesrv }}
       protocol: TCP
-      targetPort: {{ $.Values.namesrv.service.targetPort }}
-      nodePort: 3987{{ $i }}
+      targetPort: 9876
+      nodePort: {{ (add $.Values.namesrv.service.nodePorts.namesrv $i 1) }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "namesrv.fullname" $ }}-namesrv-{{ $i }}
   sessionAffinity: None

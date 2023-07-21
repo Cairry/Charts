@@ -9,13 +9,13 @@ namesrv:
   config:
     javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
 
-  replicas: 3
+  replicas: 1
 
   service:
-    type: ClusterIP
-    port: 9876
-    targetPort: 9876
-    nodePort: 29876
+    ports:
+      namesrv: 9876
+    nodePorts:
+      namesrv: 29876
 
   readinessProbe:
     enabled: false
@@ -56,12 +56,11 @@ console:
   imagePullSecrets: []
   imagePullPolicy: IfNotPresent
 
-  replicas: 3
+  replicas: 1
 
   service:
-    port: 8080
-    targetPort: 8080
     type: NodePort
+    port: 8080
     nodePort: "28080"
 
   readinessProbe:
@@ -106,12 +105,15 @@ broker:
   config:
     javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
 
-  replicas: 3
+  replicas: 1
 
   service:
-    port: 40911
-    targetPort: 40911
-    nodePort: 40911
+    ports:
+      broker: 10910
+      dledger: 20910
+    nodePorts:
+      broker: 30910
+      dledger: 40910
 
   readinessProbe:
     enabled: false

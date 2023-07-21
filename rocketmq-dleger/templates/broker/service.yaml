@@ -10,17 +10,17 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: http1
-      port: 4292{{ $i }}
+    - name: broker
+      port: {{ $.Values.broker.service.ports.broker }}
       protocol: TCP
-      targetPort: 4292{{ $i }}
-      nodePort: 4292{{ $i }}
-    - name: http2
-      port: 4291{{ $i }}
+      targetPort: 10910
+      nodePort: {{ (add $.Values.broker.service.nodePorts.broker $i 1) }}
+    - name: dledger
+      port: {{ $.Values.broker.service.ports.dledger }}
       protocol: TCP
-      targetPort: 4291{{ $i }}
-      nodePort: 4291{{ $i }}
-    - name: http3
+      targetPort: 20910
+      nodePort: {{ (add $.Values.broker.service.nodePorts.dledger $i 1) }}
+    - name: http
       port: 42908
       protocol: TCP
       targetPort: 40908

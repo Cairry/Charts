@@ -1,3 +1,10 @@
+{{- $nameReplicaCount := int .Values.namesrv.replicas }}
+{{- $nameServerList := list }}
+{{- range $i := until $nameReplicaCount }}
+{{- $namesrvName := include "namesrv.fullname" $ -}}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d.%s-%s-headless:%d" $namesrvName "namesrv" $i $namesrvName "namesrv" 9876 ) }}
+{{- end }}
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -45,21 +52,24 @@ spec:
           value: {{ .Values.broker.config.javaOptExt }}
 
         ports:
-        - name: http
-          containerPort: {{ .Values.broker.service.targetPort }}
+        - name: broker
+          containerPort: 10910
+          protocol: TCP
+        - name: dledger
+          containerPort: 20910
           protocol: TCP
 
         {{- if .Values.broker.readinessProbe.enabled }}
         readinessProbe:
           tcpSocket:
-            port: {{ .Values.broker.service.targetPort }}
+            port: 10910
           {{- toYaml .Values.broker.readinessProbe.config | nindent 10 }}
         {{- end }}
 
         {{- if .Values.broker.livenessProbe.enabled }}
         livenessProbe:
           tcpSocket:
-            port: {{ .Values.broker.service.targetPort }}
+            port: 10910
           {{- toYaml .Values.broker.livenessProbe.config | nindent 10 }}
         {{- end }}
 
@@ -86,8 +96,8 @@ spec:
         image: "{{ .Values.broker.metrics.image}}:{{ .Values.broker.metrics.imageTag }}"
         imagePullPolicy: {{ .Values.broker.metrics.imagePullPolicy }}
         args:
-        # - "--rocketmq.config.namesrvAddr={{ include "namesrv.fullname" . }}-namesrv:9876"
-        - "--rocketmq.config.namesrvAddr={{ include "namesrv.fullname" . }}-namesrv-0.{{ include "namesrv.fullname" . }}-namesrv-headless:9876;{{ include "namesrv.fullname" . }}-namesrv-1.{{ include "namesrv.fullname" . }}-namesrv-headless:9876;{{ include "namesrv.fullname" . }}-namesrv-2.{{ include "namesrv.fullname" . }}-namesrv-headless:9876"
+        - "--rocketmq.config.namesrvAddr={{ join ";" $nameServerList }}"
+        # - "--rocketmq.config.namesrvAddr={{ include "namesrv.fullname" . }}-namesrv-0.{{ include "namesrv.fullname" . }}-namesrv-headless:9876;{{ include "namesrv.fullname" . }}-namesrv-1.{{ include "namesrv.fullname" . }}-namesrv-headless:9876;{{ include "namesrv.fullname" . }}-namesrv-2.{{ include "namesrv.fullname" . }}-namesrv-headless:9876"
         ports:
         - name: http
           containerPort: 5557

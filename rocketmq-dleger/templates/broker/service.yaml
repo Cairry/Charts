@@ -11,15 +11,15 @@ spec:
   type: NodePort
   ports:
     - name: broker
-      port: {{ $.Values.broker.service.ports.broker }}
+      port: {{ (add $.Values.broker.service.ports.broker $i 0) }}
       protocol: TCP
-      targetPort: 10910
-      nodePort: {{ (add $.Values.broker.service.nodePorts.broker $i 1) }}
+      targetPort: {{ (add $.Values.broker.service.ports.broker $i 0) }}
+      nodePort: {{ (add $.Values.broker.service.ports.broker $i 0) }}
     - name: dledger
-      port: {{ $.Values.broker.service.ports.dledger }}
+      port: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
       protocol: TCP
-      targetPort: 20910
-      nodePort: {{ (add $.Values.broker.service.nodePorts.dledger $i 1) }}
+      targetPort: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
+      nodePort: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
     - name: http
       port: 42908
       protocol: TCP

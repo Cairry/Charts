@@ -109,9 +109,6 @@ broker:
 
   service:
     ports:
-      broker: 10910
-      dledger: 20910
-    nodePorts:
       broker: 30910
       dledger: 40910
 

@@ -7,7 +7,7 @@
 {{- $brokerReplicaCount := int .Values.broker.replicas }}
 {{- $brokerServerList := list }}
 {{- range $i := until $brokerReplicaCount }}
-{{- $port := add $.Values.broker.service.nodePorts.dledger $i 1 }}
+{{- $port := add $.Values.broker.service.ports.dledger $i 0 }}
 {{- $brokerName := include "broker.fullname" $ -}}
 {{- $brokerServerList = append $brokerServerList (printf "n%d-%s-%s-%d:%d" $i $brokerName "broker" $i $port ) }}
 {{- end }}
@@ -19,13 +19,19 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   setup.sh: |-
-    PodID=${POD_NAME##*-}
+    #!/bin/bash
+    set -x
+    POD_ID=${POD_NAME##*-}
     ConfigFile="/home/rocketmq/rocketmq-4.9.3/conf/broker.conf"
     ProdConfigFile="/home/rocketmq/rocketmq-4.9.3/conf/broker-prod.conf"
     cp ${ConfigFile} ${ProdConfigFile}
+    PROT=$(cat ${ProdConfigFile} | grep listen | awk '{print $3}')
+    OLD_PORT=${PROT}
+    let PROT+=${POD_ID}
     echo -e "\
     sed -i \"s#{{`{{ POD_NAME }}`}}#$POD_NAME#\" ${ProdConfigFile}\n
-    sed -i \"s#{{`{{ POD_ID }}`}}#$PodID#\" ${ProdConfigFile} " >sed
+    sed -i \"s#{{`{{ POD_ID }}`}}#$POD_ID#\" ${ProdConfigFile}\n
+    sed -i \"s#$OLD_PORT#$PROT#\" ${ProdConfigFile} " >sed
     bash sed
 
   broker.conf: |-
@@ -43,7 +49,7 @@ data:
     brokerIP1 = {{`{{ POD_NAME }}`}}
     #nameServer地址，分号分割
     namesrvAddr={{ join ";" $nameServerList }}
-    listenPort = {{ .Values.broker.service.ports.broker }}
+    listenPort = {{ $.Values.broker.service.ports.broker }}
     #是否允许Broker自动创建Topic
     autoCreateTopicEnable = true
     #是否允许 Broker 自动创建订阅组

@@ -24,15 +24,26 @@ data:
     POD_ID=${POD_NAME##*-}
     ConfigFile="/home/rocketmq/rocketmq-4.9.3/conf/broker.conf"
     ProdConfigFile="/home/rocketmq/rocketmq-4.9.3/conf/broker-prod.conf"
+    STORAGR_PATH="/home/rocketmq/store"
+    NEW_STORAGR_PATH="${STORAGR_PATH}.bak-$(date +%Y%m%d-%H:%M:%S)"
+
     cp ${ConfigFile} ${ProdConfigFile}
     PROT=$(cat ${ProdConfigFile} | grep listen | awk '{print $3}')
     OLD_PORT=${PROT}
-    let PROT+=${POD_ID}
-    echo -e "\
-    sed -i \"s#{{`{{ POD_NAME }}`}}#$POD_NAME#\" ${ProdConfigFile}\n
-    sed -i \"s#{{`{{ POD_ID }}`}}#$POD_ID#\" ${ProdConfigFile}\n
-    sed -i \"s#$OLD_PORT#$PROT#\" ${ProdConfigFile} " >sed
-    bash sed
+    for i in `seq 1 ${POD_ID}`;do
+        if [[ ${POD_ID} -ne 0 ]];then
+            let PROT+=10
+        fi
+    done
+
+    sed -i "s#{{`{{ POD_NAME }}`}}#$POD_NAME#g" ${ProdConfigFile}
+    sed -i "s#{{`{{ POD_ID }}`}}#$POD_ID#g" ${ProdConfigFile}
+    sed -i "s#$OLD_PORT#$PROT#g" ${ProdConfigFile}
+    rm -rf ${ConfigFile}
+
+    # 备份旧数据，清除数据目录，否则服务更新启动时报错「lock failed, MQ already started」。
+    mkdir ${NEW_STORAGR_PATH}
+    mv ${STORAGR_PATH}/* ${NEW_STORAGR_PATH}/
 
   broker.conf: |-
     # 所属集群名称，如果节点较多可以配置多个
@@ -49,6 +60,7 @@ data:
     brokerIP1 = {{`{{ POD_NAME }}`}}
     #nameServer地址，分号分割
     namesrvAddr={{ join ";" $nameServerList }}
+    #server服务监听端口
     listenPort = {{ $.Values.broker.service.ports.broker }}
     #是否允许Broker自动创建Topic
     autoCreateTopicEnable = true
@@ -63,6 +75,7 @@ data:
     storePathCommitLog = /home/rocketmq/store/commitlog
     #消费队列存储路径存储路径
     storePathConsumerQueue = /home/rocketmq/store/consumequeue
+    #开启Slave读权限（分担master 压力）
     slaveReadEnable = true
 
     # DLedger 多副本即主从切换
@@ -71,7 +84,21 @@ data:
     dLegerPeers={{ join ";" $brokerServerList }}
     ## must be unique,唯一ID
     dLegerSelfId=n{{`{{ POD_ID }}`}}
-    sendMessageThreadPoolNums=16
+    #发送消息的最大线程数，默认1
+    sendMessageThreadPoolNums=32
+
+    #使用可重入锁
+    useReentrantLockWhenPutMessage=true
+    #发送消息线程等待时间，默认200ms
+    waitTimeMillsInSendQueue=3000
+    #开启临时存储池,可能会出现消息丢失
+    transientStorePoolEnable=false
+    #关闭堆内存数据传输
+    transferMsgByHeap=false
+    #开启文件预热
+    warmMapedFileEnable=true
+
+
 
   logback_broker.xml: |
     <?xml version="1.0" encoding="UTF-8"?>

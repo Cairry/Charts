@@ -11,20 +11,20 @@ spec:
   type: NodePort
   ports:
     - name: broker
-      port: {{ (add $.Values.broker.service.ports.broker $i 0) }}
+      port: {{ if eq $i 0 }}{{ $.Values.broker.service.ports.broker }}{{ else }}{{ add $.Values.broker.service.ports.broker (mul 10 $i) }}{{ end }}
       protocol: TCP
-      targetPort: {{ (add $.Values.broker.service.ports.broker $i 0) }}
-      nodePort: {{ (add $.Values.broker.service.ports.broker $i 0) }}
+      targetPort: {{ if eq $i 0 }}{{ $.Values.broker.service.ports.broker }}{{ else }}{{ add $.Values.broker.service.ports.broker (mul 10 $i) }}{{ end }}
+      nodePort: {{ if eq $i 0 }}{{ $.Values.broker.service.ports.broker }}{{ else }}{{ add $.Values.broker.service.ports.broker (mul 10 $i) }}{{ end }}
     - name: dledger
       port: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
       protocol: TCP
       targetPort: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
       nodePort: {{ (add $.Values.broker.service.ports.dledger $i 0) }}
-    - name: http
-      port: 42908
+    - name: fast
+      port: {{ if eq $i 0 }}{{ sub $.Values.broker.service.ports.broker 2 }}{{ else }}{{ sub (add $.Values.broker.service.ports.broker (mul 10 $i)) 2 }}{{ end }}
       protocol: TCP
-      targetPort: 40908
-      nodePort: null
+      targetPort: {{ if eq $i 0 }}{{ sub $.Values.broker.service.ports.broker 2 }}{{ else }}{{ sub (add $.Values.broker.service.ports.broker (mul 10 $i)) 2 }}{{ end }}
+      nodePort: {{ if eq $i 0 }}{{ sub $.Values.broker.service.ports.broker 2 }}{{ else }}{{ sub (add $.Values.broker.service.ports.broker (mul 10 $i)) 2 }}{{ end }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ include "broker.fullname" $ }}-broker-{{ $i }}
   sessionAffinity: None

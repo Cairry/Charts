@@ -54,7 +54,15 @@ namesrv:
 
   tolerations: []
 
-  podAntiAffinityEnabled: {}
+  # pod 软亲和
+  podAntiAffinityEnabled: true
+
+  # node 硬亲和
+  nodeAffinity:
+  # - key: "rocketmq"
+  #   operator: In
+  #   values:
+  #   - "true"
 
 console:
   enabled: true
@@ -100,7 +108,15 @@ console:
 
   tolerations: []
 
-  podAntiAffinityEnabled: {}
+  # pod 软亲和
+  podAntiAffinityEnabled: true
+
+  # node 硬亲和
+  nodeAffinity:
+  # - key: "rocketmq"
+  #   operator: In
+  #   values:
+  #   - "true"
 
 broker:
   enabled: true
@@ -149,7 +165,15 @@ broker:
 
   tolerations: []
 
-  podAntiAffinityEnabled: {}
+  # pod 软亲和
+  podAntiAffinityEnabled: true
+
+  # node 硬亲和
+  nodeAffinity:
+  # - key: "rocketmq"
+  #   operator: In
+  #   values:
+  #   - "true"
 
   persistence:
     enabled: true

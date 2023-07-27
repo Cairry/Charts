@@ -88,6 +88,13 @@ spec:
               weight: 1
     {{- end }}
 
+    {{- if .Values.namesrv.nodeAffinity }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              {{- toYaml .Values.namesrv.nodeAffinity | nindent 14 }}
+    {{- end }}
 
     {{- with .Values.namesrv.tolerations }}
       tolerations:

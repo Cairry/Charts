@@ -127,7 +127,13 @@ spec:
                     {{- include "broker.selectorLabels" . | nindent 20 }}
               weight: 1
     {{- end }}
-
+    {{- if .Values.broker.nodeAffinity }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              {{- toYaml .Values.broker.nodeAffinity | nindent 14 }}
+    {{- end }}
 
     {{- with .Values.broker.tolerations }}
       tolerations:

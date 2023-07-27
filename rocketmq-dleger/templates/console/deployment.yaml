@@ -80,6 +80,14 @@ spec:
               weight: 1
     {{- end }}
 
+    {{- if .Values.console.nodeAffinity }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              {{- toYaml .Values.console.nodeAffinity | nindent 14 }}
+    {{- end }}
+
     {{- with .Values.console.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

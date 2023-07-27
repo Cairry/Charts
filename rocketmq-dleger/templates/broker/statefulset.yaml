@@ -1,8 +1,14 @@
+{{- if .Values.broker.enabled }}
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
+{{- $namesrvaddr := .Values.global.namesrvAddr }}
+{{- if eq $namesrvaddr "" }}
 {{- range $i := until $nameReplicaCount }}
 {{- $namesrvName := include "namesrv.fullname" $ -}}
-{{- $nameServerList = append $nameServerList (printf "%s-%s-%d.%s-%s-headless:%d" $namesrvName "namesrv" $i $namesrvName "namesrv" 9876 ) }}
+{{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $namesrvName "namesrv" $i 9876 ) }}
+{{- end }}
+{{- else }}
+{{- $nameServerList = .Values.global.namesrvAddr }}
 {{- end }}
 
 apiVersion: apps/v1
@@ -153,3 +159,4 @@ spec:
         requests:
           storage: {{ .Values.broker.persistence.size }}
   {{- end }}
+{{- end }}

@@ -1,6 +1,13 @@
+global:
+  # 集群名称
+  brokerClusterName: DefaultCluster
+  # broker 名称, master 和 slave 使用相同的名称
+  brokerName: broker-dledger01
+  # 默认不填, 则会加入到当前集群自建的 namesrv 集群中, 如果填写指定的 namesrv 集群, 则会加入到指定的集群中.
+  namesrvAddr: ""
 
 namesrv:
-
+  enabled: true
   image: "apache/rocketmq"
   imageTag: "4.9.3"
   imagePullSecrets: []
@@ -50,7 +57,7 @@ namesrv:
   podAntiAffinityEnabled: {}
 
 console:
-
+  enabled: true
   image: "apacherocketmq/rocketmq-console"
   imageTag: "2.0.0"
   imagePullSecrets: []
@@ -96,7 +103,7 @@ console:
   podAntiAffinityEnabled: {}
 
 broker:
-
+  enabled: true
   image: "apache/rocketmq"
   imageTag: "4.9.3"
   imagePullSecrets: []

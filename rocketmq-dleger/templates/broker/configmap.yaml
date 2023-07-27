@@ -1,8 +1,14 @@
+{{- if .Values.broker.enabled }}
 {{- $nameReplicaCount := int .Values.namesrv.replicas }}
 {{- $nameServerList := list }}
+{{- $namesrvaddr := .Values.global.namesrvAddr }}
+{{- if eq $namesrvaddr "" }}
 {{- range $i := until $nameReplicaCount }}
 {{- $namesrvName := include "namesrv.fullname" $ -}}
 {{- $nameServerList = append $nameServerList (printf "%s-%s-%d:%d" $namesrvName "namesrv" $i 9876 ) }}
+{{- end }}
+{{- else }}
+{{- $nameServerList = .Values.global.namesrvAddr }}
 {{- end }}
 {{- $brokerReplicaCount := int .Values.broker.replicas }}
 {{- $brokerServerList := list }}
@@ -42,14 +48,14 @@ data:
     rm -rf ${ConfigFile}
 
     # 备份旧数据，清除数据目录，否则服务更新启动时报错「lock failed, MQ already started」。
-    mkdir ${NEW_STORAGR_PATH}
-    mv ${STORAGR_PATH}/* ${NEW_STORAGR_PATH}/
+    # mkdir ${NEW_STORAGR_PATH}
+    # mv ${STORAGR_PATH}/* ${NEW_STORAGR_PATH}/
 
   broker.conf: |-
     # 所属集群名称，如果节点较多可以配置多个
-    brokerClusterName = DefaultCluster
+    brokerClusterName = {{ $.Values.global.brokerClusterName }}
     #broker名称，master和slave使用相同的名称，表明他们的主从关系
-    brokerName = broker-dledger
+    brokerName = {{ $.Values.global.brokerName }}
     #表示几点做消息删除动作，默认是凌晨4点
     deleteWhen = 04
     #在磁盘上保留消息的时长，单位是小时
@@ -80,7 +86,7 @@ data:
 
     # DLedger 多副本即主从切换
     enableDLegerCommitLog=true
-    dLegerGroup=broker-dledger
+    dLegerGroup={{ $.Values.global.brokerName }}
     dLegerPeers={{ join ";" $brokerServerList }}
     ## must be unique,唯一ID
     dLegerSelfId=n{{`{{ POD_ID }}`}}
@@ -97,6 +103,12 @@ data:
     transferMsgByHeap=false
     #开启文件预热
     warmMapedFileEnable=true
+
+    enableControllerMode=true
+    fetchNamesrvAddrByAddressServer=true
+    fetchControllerAddrByDnsLookup=true
+    allAckInSyncStateSet=true
+    enablePropertyFilter=true
 
 
 
@@ -438,3 +450,4 @@ data:
             <appender-ref ref="DefaultAppender"/>
         </root>
     </configuration>
+{{- end }}

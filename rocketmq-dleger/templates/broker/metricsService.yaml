@@ -1,3 +1,4 @@
+{{- if .Values.broker.enabled }}
 {{- if .Values.broker.metrics.enabled }}
 apiVersion: v1
 kind: Service
@@ -16,4 +17,5 @@ spec:
   selector:
     {{- include "broker.selectorLabels" . | nindent 4 }}
   sessionAffinity: None
+{{- end }}
 {{- end }}

@@ -65,24 +65,6 @@ rocketmq-namesrv-2          NodePort    10.233.48.19    <none>        9876:29872
 rocketmq-namesrv-headless   ClusterIP   None            <none>        9876/TCP                                          14m
 ```
 
-## 扩容 Broker 节点
-
-修改`values`中`broker.replicas`改成期望值即可
-
-```
-broker:
-
-  ···
-  replicas: 6
-
-```
-
-更新配置
-
-```
-# helm upgrade -i -f values.yaml rocketmq .
-```
-
 ## 访问控制台
 
 `http://${IP}:28080`

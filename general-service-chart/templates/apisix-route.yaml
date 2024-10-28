@@ -1,0 +1,28 @@
+{{- with .Values }}
+{{- if .apisix.enabled}}
+{{- $svcPort := .services.ports.http.port -}}
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: {{ include "service.fullname" $ }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  http:
+    {{- range .apisix.route }}
+    - name: {{ .name }}
+      websocket: {{ .websocket }}
+      match:
+        hosts:
+          {{- toYaml .hosts | nindent 10 }}
+        paths:
+          {{- toYaml .paths | nindent 10 }}
+      backends:
+        - serviceName: {{ include "service.fullname" $ }}
+          servicePort: {{ $svcPort }}
+      {{- if .plugins }}
+      plugins:
+        {{- toYaml .plugins | nindent 8 }}
+      {{- end }}
+    {{- end }}
+{{- end}}
+{{- end}}

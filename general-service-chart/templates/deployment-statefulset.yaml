@@ -1,0 +1,169 @@
+{{- with .Values -}}
+{{- if eq .ControllerType "deployment" }}
+apiVersion: apps/v1
+kind: Deployment
+{{- else if eq .ControllerType "statefulset" }}
+apiVersion: apps/v1
+kind: StatefulSet
+{{- end }}
+metadata:
+  {{- if eq .ControllerType "deployment" }}
+  name: {{ include "service.fullname" $ }}
+  {{- else if eq .ControllerType "statefulset" }}
+  name: {{ include "service.fullname" $ }}
+  {{- end }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "service.labels" $ | nindent 4 }}
+spec:
+  replicas: {{ .replicas }}
+  {{- if eq .ControllerType "statefulset" }}
+  serviceName: {{ include "service.fullname" $ }}-headless
+  podManagementPolicy: {{ .podManagementPolicy }}
+  {{- end }}
+  {{- if eq .ControllerType "deployment" }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "service.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "service.labels" $ | nindent 8 }}
+      annotations:
+        HPAScaleUpDelay: 3m # HPA在Pod创建3分钟后开始生效。
+
+    spec:
+      {{- if .imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .imagePullSecrets | nindent 8 }}
+      {{- end }}
+
+      {{- with .nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- if .podAntiAffinityEnabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "service.selectorLabels" $ | nindent 20 }}
+              weight: 1
+        {{- if .nodeAffinity }}
+        nodeAffinity:
+          {{- toYaml .nodeAffinity | nindent 10 }}
+        {{- end }}
+      {{- end }}
+
+      {{- with .tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+
+      {{- if .initContainers.enabled }}
+      initContainers:
+      - name: init
+        image: {{ .initContainers.imageName }}:{{.initContainers.imageTag }}
+        {{- if .initContainers.command }}
+        command:
+        {{- toYaml .initContainers.command | nindent 8 }}
+        {{- end }}
+        {{- if .initContainers.volumeMounts }}
+        {{- range $key, $value := .initContainers.volumeMounts }}
+        volumeMounts:
+        - name: {{ $key }}
+          {{- toYaml $value | nindent 10 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+
+      containers:
+      - name: {{ .containerName }}
+        image: "{{ .image}}:{{ .imageTag }}"
+        imagePullPolicy: {{ .imagePullPolicy }}
+        ports:
+        {{- range $key, $value := .services.ports }}
+        - name: {{ $key }}
+          containerPort: {{ $value.port }}
+          protocol: {{ $value.protocol }}
+        {{- end }}
+
+        {{- if .command }}
+        command:
+        {{- toYaml .command | nindent 8 }}
+        {{- end }}
+
+        {{- if .envs }}
+        env:
+        {{- toYaml .envs | nindent 8 }}
+        {{- end }}
+
+        {{- if .healthCheck.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .healthCheck.readinessProbe | nindent 10 }}
+        {{- end }}
+
+        {{- if .healthCheck.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .healthCheck.livenessProbe | nindent 10 }}
+        {{- end }}
+
+        {{- if .healthCheck.startupProbe }}
+        startupProbe:
+          {{- toYaml .healthCheck.startupProbe | nindent 10 }}
+        {{- end }}
+
+        {{- if .lifecycle }}
+        lifecycle:
+          {{- toYaml .lifecycle | nindent 10 }}
+        {{- end }}
+
+        {{- if .resources }}
+        resources:
+          {{- toYaml .resources | nindent 10 }}
+        {{- end }}
+
+        {{- if .volumesConfigure.enabled }}
+        volumeMounts:
+        {{- if .volumesConfigure.enabled }}
+        {{- range $key, $value := .volumesConfigure.volumeMounts }}
+        - name: {{ $key }}
+          {{- toYaml $value | nindent 10 }}
+        {{- range .}}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+
+      {{- if .volumesConfigure.enabled }}
+      volumes:
+      {{- if and .volumesConfigure.enabled .volumesConfigure.volumes }}
+      {{- range $key, $value := .volumesConfigure.volumes }}
+      - name: {{ $key }}
+        {{- toYaml $value | nindent 8 }}
+      {{- end }}
+      {{- end }}
+    {{- if and (eq .ControllerType "statefulset") .volumesConfigure.volumeClaimTemplates.enabled }}
+      volumeClaimTemplates:
+      - metadata:
+        name: {{ .volumesConfigure.volumeClaimTemplates.name }}
+      spec:
+        accessModes:
+          - {{ .volumesConfigure.volumeClaimTemplates.accessModes | quote }}
+        storageClassName: {{ .volumesConfigure.volumeClaimTemplates.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .volumesConfigure.volumeClaimTemplates.requestSize }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

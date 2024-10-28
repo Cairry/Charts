@@ -1,0 +1,12 @@
+{{- if .Values.configMap.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "service.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  {{- range $key, $value := .configMap.data }}
+  {{ $key }}: |-
+    {{- toYaml $value | nindent 4 }}
+  {{- end }}
+{{- end -}}

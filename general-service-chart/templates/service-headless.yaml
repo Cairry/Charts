@@ -1,0 +1,28 @@
+{{- with .Values }}
+{{- if and (eq .ControllerType "statefulset") .services.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ printf "%s-headless" (include "service.fullname" $) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "service.labels" $ | nindent 4 }}
+  {{- if .services.annotations }}
+  annotations:
+    {{- toYaml .services.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  sessionAffinity: None
+  clusterIP: None
+  type: ClusterIP
+  publishNotReadyAddresses: true
+  ports:
+  {{- range $key, $value := .headlessServices }}
+  - name: {{ $key }}
+    targetPort: {{ $key }}
+    {{- toYaml $value | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "service.selectorLabels" $ | nindent 4 }}
+{{- end }}
+{{- end }}

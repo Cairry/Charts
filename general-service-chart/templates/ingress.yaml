@@ -1,0 +1,47 @@
+{{- with .Values }}
+{{- if .ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "service.fullname" $ }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "service.labels" $ | nindent 4 }}
+  {{- if .services.annotations }}
+  annotations:
+    {{- toYaml .services.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+    {{- if .ingress.defaultRules }}
+    {{- if .ingress.hostname }}
+    - host: {{ .ingress.hostname }}
+      http:
+        paths:
+          {{- if .ingress.extraPaths }}
+          {{- toYaml .ingress.extraPaths | nindent 10 }}
+          {{- end }}
+          - path: {{ .ingress.path }}
+            backend:
+              serviceName: {{ include "service.fullname" $ }}
+              servicePort: {{ .services.ports.http.port }}
+    {{- end }}
+    {{- end }}
+
+    {{- range .ingress.extraRules }}
+    - host: {{ .name | quote }}
+      http:
+        paths:
+          - path: {{ default "/" .path }}
+            backend:
+              {{- toYaml .ingress.extraRules.backend | nindent 14 }}
+    {{- end }}
+
+  {{- if .ingress.tls.enabled }}
+  tls:
+    {{- if .ingress.extraTls }}
+    {{- toYaml .ingress.tls.extraTls | nindent 4 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

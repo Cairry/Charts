@@ -1,0 +1,18 @@
+{{- if .Values.HPA.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "service.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    {{- if eq .Values.ControllerType "deployment" }}
+    apiVersion: apps/v1
+    kind: Deployment
+    {{- else if eq .Values.ControllerType "statefulset" }}
+    apiVersion: apps/v1
+    kind: StatefulSet
+    {{- end }}
+    name: {{ include "service.fullname" . }}
+  {{- toYaml .Values.HPA.config | nindent 2 }}
+{{- end }}

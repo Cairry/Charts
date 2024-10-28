@@ -1,0 +1,26 @@
+{{- with .Values }}
+{{- if .services.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "service.fullname" $ }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "service.labels" $ | nindent 4 }}
+  {{- if .services.annotations }}
+  annotations:
+    {{- toYaml .services.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  ports:
+  {{- range $key, $value := .services.ports }}
+  - name: {{ $key }}
+    targetPort: {{ $key }}
+    {{- toYaml $value | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "service.selectorLabels" $ | nindent 4 }}
+  sessionAffinity: None
+  type: {{ .services.type }}
+{{- end }}
+{{- end }}

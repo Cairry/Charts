@@ -1,0 +1,259 @@
+# Default values for aicp-nlu.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# EE pre-defined parameter
+nameOverride: ""
+fullnameOverride: ""
+
+# Pod 内容器名称
+containerName: "server"
+# 容器镜像
+image: ""
+imageTag: ""
+imagePullSecrets: []
+imagePullPolicy: IfNotPresent
+
+# 部署类型:「 deployment | statefulset 」
+ControllerType: "deployment"
+
+# 副本数
+replicas: 1
+
+# 资源限制
+resources: {}
+
+# 节点调度
+nodeSelector: {}
+
+# 污点容忍
+tolerations: []
+
+# 亲和性
+podAntiAffinityEnabled: true
+
+# Node 亲和性
+nodeAffinity: {}
+
+# 命令
+command: []
+# - "ls"
+# - "/root"
+
+# 环境变量
+envs: {}
+  # - name: NAME
+  #   value: Zusir
+
+podManagementPolicy: ""
+
+initContainers:
+  enabled: false
+  imageName: ""
+  imageTag: ""
+  command: []
+  # - "ls"
+  # - "/root"
+  volumeMounts: {}
+    # data:
+      # mountPath: ""
+      # subPath: ""
+      # readOnly: true
+
+# 探针
+healthCheck:
+  livenessProbe: {}
+    # httpGet:
+    #   path: /livenessProbe
+    #   port: 80
+    # initialDelaySeconds: 15   # 初始延迟秒数, k8s默认值为0，最小为0
+    # timeoutSeconds: 1         # 检测超时，k8s默认值1，最小为1
+    # periodSeconds: 30         # 检测周期，k8s默认值10，最小为1
+    # successThreshold: 1       # 失败后成功次数，k8s默认值1，最小为1，只能设置为1
+    # failureThreshold: 3       # 失败后重试次数，k8s默认值3，最小为1
+
+  readinessProbe: {}
+    # httpGet:
+    #   path: /readinessProbe
+    #   port: 80
+    # initialDelaySeconds: 15
+    # timeoutSeconds: 1
+    # periodSeconds: 5
+    # successThreshold: 1
+    # failureThreshold: 3
+
+  startupProbe: {}
+    # exec:
+    #   command:
+    #   - cat
+    #   - /tmp/ossfs/assets/health/check_file
+    # initialDelaySeconds: 5
+    # timeoutSeconds: 3
+    # periodSeconds: 2
+    # successThreshold: 1
+    # failureThreshold: 3
+
+# 钩子函数
+lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ['sh','-c','echo Hello from the poststart handler > /usr/share/message']
+
+  # preStop:
+  #   exec:
+  #     command: ['/bin/sh', '-c', 'echo Hello from the preStop Handler > /usr/share/message']
+
+# 存储
+volumesConfigure:
+  # 开启持久化存储
+  enabled: false
+  volumeMounts: {}
+    # /*
+    # 参数解释：
+    # config:   // 字段为volumeMounts中 - name: config
+    # mountPath:  // 及以下同级字段均为 - name下的字段和参数
+    # 当有多个挂载点，可根据config字段复制一份即可，修改config字段名为自定义名字。volumeMounts.config 要与 volumes.config 相同，绑定挂载
+    # */
+    # config:
+    #   mountPath: ""
+    #   subPath: ""
+    #   readOnly: true
+
+    # data:
+    #   mountPath: ""
+    #   subPath: ""
+    #   readOnly: true
+
+  # 当 statefulset 控制器不需要 volumes 需要将 volumes 下的所有字段注释，并且 volumes 的 value 改为 {}
+  volumes: {}
+    # /*
+    # 参数解释：
+    # config:   // 字段为volumeMounts中 - name: config
+    # configMap:  // 挂载方式
+    # 当有多个挂载点，可根据config字段复制一份即可，修改config字段名为自定义名字。 volumes.config 要与 volumeMounts.config 相同，绑定挂载
+    # */
+    # config:
+    #   configMap:
+    #     name: ""
+
+    # data:
+    #   persistentVolumeClaim:
+    #     claimName: my-pvc-auto
+
+  volumeClaimTemplates:
+    enabled: false
+    name: data-storage
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: "managed-nfs-storage"
+    requestSize: 100Gi
+
+# 配置
+configMap:
+  enabled: false
+  data:
+    test.conf: "value"
+
+# SVC
+services:
+  enabled: false
+  annotations: {}
+  type: ClusterIP
+  ports:
+    # 多端口暴露时，复制一段
+    http:
+      port: 80
+      protocol: TCP
+    # grpc:
+    #   port: 50051
+    #   protocol: TCP
+
+# headless 不支持 NodePort
+headlessServices: {}
+  # http:
+  #   port: 5000
+  #   protocol: TCP
+
+# ingress
+ingress:
+  # 开启 ingress
+  enabled: false
+  # 注解
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  # cert-manager.io/cluster-issuer: cluster-issuer-name
+
+  # 启用默认路由
+  defaultRules: true
+  # 默认hostname
+  hostname: chart-example.local
+  # 默认path
+  path: /
+
+  # 自定义路径
+  extraPaths: []
+  # - path: /*
+  #   backend:
+  #     serviceName: ssl-redirect
+  #     servicePort: use-annotation
+
+  # 自定义路由
+  extraRules: []
+  # - name: chart-example.local
+  #   path: /
+  #   backend:
+  #     serviceName: ssl-redirect
+  #     servicePort: use-annotation
+
+  tls:
+    # 开启 tls 认证
+    enabled: false
+
+    # 自定义 tls 配置
+    extraTls: []
+    # - hosts:
+    #   - feiutest.cn
+    #   secretName: nginx-test  # 需自建 secret
+
+HPA:
+  enabled: false
+  config:
+    minReplicas: 2
+    maxReplicas: 10
+    metrics:
+    - type: Pods
+      pods:
+        metricName: duty_cycle_current # Pod的GPU利用率
+        targetAverageValue: 95 # 当GPU利用率超过95%，触发扩容。
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     targetAverageUtilization: 60
+    # - type: Resource
+    #   resource:
+    #     name: cpu
+    #     targetAverageUtilization: 80
+
+apisix:
+  # 开启apisix
+  enabled: false
+  # 路由配置
+  route:
+    - name: httpv1
+      websocket: false
+      hosts:
+        - xxx.com
+        - yyy.com
+      paths:
+        - /api/v1/*
+        - /api/v2/*
+      plugins: {}
+    # - name: httpv2
+    #   websocket: false
+    #   hosts:
+    #     - xxx.com
+    #     - yyy.com
+    #   paths:
+    #     - /api/v1/*
+    #     - /api/v2/*
+      # plugins: {}

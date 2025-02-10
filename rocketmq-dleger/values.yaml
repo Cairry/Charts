@@ -14,7 +14,7 @@ namesrv:
   imagePullPolicy: IfNotPresent
 
   config:
-    javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
+    javaOptExt: -Xms128M -Xmx4096M -Xmn128m
 
   replicas: 1
 
@@ -48,7 +48,7 @@ namesrv:
       memory: 8Gi
     requests:
       cpu: 1m
-      memory: 1Gi
+      memory: 256Mi
 
   nodeSelector: []
 
@@ -101,8 +101,8 @@ console:
       cpu: 2
       memory: 4Gi
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 50m
+      memory: 32Mi
 
   nodeSelector: []
 
@@ -126,7 +126,7 @@ broker:
   imagePullPolicy: IfNotPresent
 
   config:
-    javaOptExt: -Xms4096M -Xmx4096M -Xmn1024m
+    javaOptExt: -Xms32M -Xmx4096M -Xmn256m
 
   replicas: 1
 
@@ -159,7 +159,7 @@ broker:
       memory: 8Gi
     requests:
       cpu: 1m
-      memory: 2Gi
+      memory: 32Mi
 
   nodeSelector: []
 
